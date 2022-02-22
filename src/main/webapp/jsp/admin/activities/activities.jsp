@@ -54,8 +54,6 @@
     </div>
 </header>
 
-
-
 <div class="container">
     <div class="row mb-2">
         <div class="col-12 text-center"><h1>Activities</h1></div>
@@ -105,17 +103,93 @@
             <h4>People:</h4>
         </div>
         <div class="row">
-            <div class="d-flex">
-                <input type="number" class="form-control me-1" style="width: 100px;" name="from" placeholder="From" aria-label="From" min="0" max="${requestScope.peopleMaxCount}" value="${param.from}">
-                <input type="number" class="form-control ms-1" style="width: 100px;" name="to" placeholder="To" aria-label="To" min="0" max="${requestScope.peopleMaxCount}" value="${param.to}">
+            <div class="d-inline-flex justify-content-between">
+                <div class="d-flex">
+                    <input type="number" class="form-control me-1" style="width: 100px;" name="from" placeholder="From" aria-label="From" min="0" max="${requestScope.peopleMaxCount}" value="${param.from}">
+                    <input type="number" class="form-control ms-1" style="width: 100px;" name="to" placeholder="To" aria-label="To" min="0" max="${requestScope.peopleMaxCount}" value="${param.to}">
+                    <button type="submit" class="btn btn-primary ms-2">Filter</button>
+                    <a href="<%= request.getContextPath() + "/a/activities" %>" class="btn btn-primary ms-1">Reset</a>
+                </div>
             </div>
         </div>
-        <div class="mt-3">
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <a href="<%= request.getContextPath() + "/a/activities" %>" class="btn btn-primary">Reset</a>
-        </div>
     </form>
-
+    <div class="row">
+        <div class="d-inline-flex justify-content-between">
+            <div class="d-flex"></div>
+            <div class="d-flex align-items-center">
+                <form action="<%= request.getContextPath() + "/a/activities" %>" method="get">
+                    <c:if test="${param.search != null && not empty param.search}">
+                        <input type="hidden" name="search" value="${param.search}">
+                    </c:if>
+                    <c:if test="${param.filter != null && not empty param.filter}">
+                        <c:forEach var="category" items="${requestScope.filterCategories}">
+                            <input type="hidden" name="filter" value="${category}">
+                        </c:forEach>
+                    </c:if>
+                    <c:if test="${param.from != null && not empty param.from}">
+                        <input type="hidden" name="from" value="${param.from}">
+                    </c:if>
+                    <c:if test="${param.to != null && not empty param.to}">
+                        <input type="hidden" name="to" value="${param.to}">
+                    </c:if>
+                    <div class="d-flex">
+                        <select class="form-select" aria-label="Sort by" name="sort" id="sort">
+                            <option value="">Sort by</option>
+                            <c:choose>
+                                <c:when test="${param.sort.equals('name')}">
+                                    <option value="name" selected>alphabet</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="name">alphabet</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sort.equals('create_time')}">
+                                    <option value="create_time" selected>newest</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="create_time">newest</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sort.equals('people_count')}">
+                                    <option value="people_count" selected>number of people</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="people_count">number of people</option>
+                                </c:otherwise>
+                            </c:choose>
+                        </select>
+                        <select class="form-select ms-2" aria-label="Order by" name="order" id="orderBy"
+                                required>
+                            <c:choose>
+                                <c:when test="${param.order.equals('asc') ||
+                                                param.order == null ||
+                                                empty param.order}">
+                                    <option value="asc" selected>ascending</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="asc">ascending</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.order.equals('desc')}">
+                                    <option value="desc" selected>descending</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="desc">descending</option>
+                                </c:otherwise>
+                            </c:choose>
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="width: 100px; margin-left: 11px;"
+                                value="2">
+                            Sort
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
         <c:forEach var="activity" items="${requestScope.activities}">
             <div class="col">
@@ -169,6 +243,10 @@
                                    class="btn btn-sm btn-outline-secondary">Edit</a>
                                 <a href="<%=request.getContextPath() + "/a/delete-act"%>?id=${activity.id}"
                                    class="btn btn-sm btn-outline-secondary">Delete</a>
+                            </div>
+
+                            <div class="d-flex text-muted">
+                                <p class="m-0">${activity.createTime}</p>
                             </div>
 
                             <div class="d-flex text-muted">

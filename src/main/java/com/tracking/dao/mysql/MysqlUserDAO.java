@@ -219,8 +219,11 @@ public class MysqlUserDAO implements UserDAO {
     @Override
     public List<User> getAllOrder(String sort, String order, int start, int total) throws SQLException {
         List<User> userList = null;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(SELECT_ALL_USERS_ORDER.replace(SORT, sort).replace(ORDER, order))) {
+             PreparedStatement prst = con.prepareStatement(SELECT_ALL_USERS_ORDER.replace(ORDER_BY, orderBy))) {
             userList = new ArrayList<>();
             int c = 0;
             prst.setInt(++c, start - 1);
@@ -287,8 +290,11 @@ public class MysqlUserDAO implements UserDAO {
     @Override
     public List<User> getAllWhereNameOrder(String lastName, String firstName, String sort, String order, int start, int total) throws SQLException {
         List<User> userList = null;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(SELECT_ALL_USERS_WHERE_NAME_ORDER.replace(SORT, sort).replace(ORDER, order))) {
+             PreparedStatement prst = con.prepareStatement(SELECT_ALL_USERS_WHERE_NAME_ORDER.replace(ORDER_BY, orderBy))) {
             userList = new ArrayList<>();
             int c = 0;
             if (lastName != null)

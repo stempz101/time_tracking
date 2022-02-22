@@ -14,15 +14,27 @@ public interface ActivityDAO {
 
     List<Activity> getAll(int peopleFrom, int peopleTo, int start, int total) throws SQLException;
 
+    List<Activity> getAllOrder(String sort, String order, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
+
     List<Activity> getAllLike(String searchQuery, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
+
+    List<Activity> getAllLikeOrder(String searchQuery, String sort, String order, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
 
     List<Activity> getAllWhereCategory(List<Integer> categoryList, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
 
+    List<Activity> getAllWhereCategoryOrder(List<Integer> categoryList, String sort, String order, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
+
     List<Activity> getAllWhereCategoryIsNull(int peopleFrom, int peopleTo,int start, int total) throws SQLException;
+
+    List<Activity> getAllWhereCategoryIsNullOrder(String sort, String order, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
 
     List<Activity> getAllLikeAndWhereCategory(String searchQuery, List<Integer> categoryList, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
 
+    List<Activity> getAllLikeAndWhereCategoryOrder(String searchQuery, List<Integer> categoryList, String sort, String order, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
+
     List<Activity> getAllLikeAndWhereCategoryIsNull(String searchQuery, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
+
+    List<Activity> getAllLikeAndWhereCategoryIsNullOrder(String searchQuery, String sort, String order, int peopleFrom, int peopleTo, int start, int total) throws SQLException;
 
     Activity getById(int id) throws SQLException;
 

@@ -96,13 +96,12 @@ public class UsersService extends Service {
             List<User> userList;
 
             int start = 1;
-            int total = 10;
             int page = 1;
             if (req.getParameter("page") != null) {
                 page = Integer.parseInt(req.getParameter("page"));
                 if (page <= 0)
                     return false;
-                start = start + total * (page - 1);
+                start = start + TOTAL_USERS * (page - 1);
             }
 
             int userCount = getCount();
@@ -117,26 +116,25 @@ public class UsersService extends Service {
                     String order = req.getParameter("order");
                     if (order == null || order.isEmpty())
                         order = "asc";
-                    userList = getAllWhereNameSorted(lastName, firstName, sort, order, start, total);
+                    userList = getAllWhereNameSorted(lastName, firstName, sort, order, start, TOTAL_USERS);
                 } else {
-                    userList = getAllWhereName(lastName, firstName, start, total);
+                    userList = getAllWhereName(lastName, firstName, start, TOTAL_USERS);
                 }
             } else if (req.getParameter("sortBy") != null && !req.getParameter("sortBy").isEmpty()) {
                 String sort = req.getParameter("sortBy");
                 String order = req.getParameter("order");
                 if (order == null || order.isEmpty())
                     order = "asc";
-                userList = getAllSorted(sort, order, start, total);
+                userList = getAllSorted(sort, order, start, TOTAL_USERS);
             } else {
-                userList = getAll(start, total);
+                userList = getAll(start, TOTAL_USERS);
             }
-            int pageCount = userCount % total == 0 ? userCount / total
-                    : userCount / total + 1;
+            int pageCount = getPageCount(userCount, TOTAL_USERS);
             int previousPage = 0;
             if (page > 1)
                 previousPage = page - 1;
             int nextPage = 0;
-            if (userCount > total && page < pageCount)
+            if (userCount > TOTAL_USERS && page < pageCount)
                 nextPage = page + 1;
 
             req.setAttribute("pageCount", pageCount);

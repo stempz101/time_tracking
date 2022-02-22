@@ -1,7 +1,6 @@
 package com.tracking.services.activities;
 
 import com.tracking.dao.ActivityDAO;
-import com.tracking.dao.CategoryDAO;
 import com.tracking.dao.DAOFactory;
 import com.tracking.lang.Language;
 import com.tracking.models.Activity;
@@ -12,7 +11,6 @@ import com.tracking.services.categories.CategoriesService;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 
 public class ActivitiesService extends Service {
@@ -27,156 +25,9 @@ public class ActivitiesService extends Service {
         }
     }
 
-    public List<Activity> getAll(int peopleFrom, int peopleTo, int start, int total) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        List<Activity> activityList = null;
-        try {
-            activityList = activityDAO.getAll(peopleFrom, peopleTo, start, total);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-        return activityList;
-    }
-
-    public List<Activity> getAllWhereCategory(List<Integer> categoryIds, int peopleFrom, int peopleTo, int start, int total)
-            throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        List<Activity> activityList = null;
-        try {
-            activityList = activityDAO.getAllWhereCategory(categoryIds, peopleFrom, peopleTo, start, total);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-        return activityList;
-    }
-
-    public List<Activity> getAllWhereCategoryIsOther(int peopleFrom, int peopleTo, int start, int total) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        List<Activity> activityList = null;
-        try {
-            activityList = activityDAO.getAllWhereCategoryIsNull(peopleFrom, peopleTo, start, total);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-        return activityList;
-    }
-
-    public List<Activity> getAllBySearch(String searchQuery, int peopleFrom, int peopleTo, int start, int total) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        List<Activity> activityList = null;
-        try {
-            activityList = activityDAO.getAllLike(searchQuery, peopleFrom, peopleTo, start, total);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-        return activityList;
-    }
-
-    public List<Activity> getAllBySearchWhereCategory(String searchQuery, List<Integer> categoryIds, int peopleFrom,
-                                                      int peopleTo, int start, int total) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        List<Activity> activityList = null;
-        try {
-            activityList = activityDAO.getAllLikeAndWhereCategory(searchQuery, categoryIds,
-                    peopleFrom, peopleTo, start, total);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-        return activityList;
-    }
-
-    public List<Activity> getAllBySearchWhereCategoryIsOther(String searchQuery, int peopleFrom, int peopleTo,
-                                                            int start, int total) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        List<Activity> activityList = null;
-        try {
-            activityList = activityDAO.getAllLikeAndWhereCategoryIsNull(searchQuery, peopleFrom, peopleTo, start, total);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-        return activityList;
-    }
-
-    public int getCount(int peopleFrom, int peopleTo) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        try {
-            return activityDAO.getCount(peopleFrom, peopleTo);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-    }
-
-    public int getCountWhereCategory(List<Integer> categoryIds, int peopleFrom, int peopleTo) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        try {
-            return activityDAO.getCountWhereCategory(categoryIds, peopleFrom, peopleTo);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-    }
-
-    public int getCountWhereCategoryIsOther(int peopleFrom, int peopleTo) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        try {
-            return activityDAO.getCountWhereCategoryIsNull(peopleFrom, peopleTo);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-    }
-
-    public int getCountBySearch(String searchQuery, int peopleFrom, int peopleTo) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        try {
-            return activityDAO.getCountWhereLike(searchQuery, peopleFrom, peopleTo);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-    }
-
-    public int getCountBySearchWhereCategory(String searchQuery, List<Integer> categoryIds, int peopleFrom, int peopleTo)
-            throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        try {
-            return activityDAO.getCountWhereLikeAndCategory(searchQuery, categoryIds, peopleFrom, peopleTo);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-    }
-
-    public int getCountBySearchWhereCategoryIsOther(String searchQuery, int peopleFrom, int peopleTo) throws SQLException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        try {
-            return activityDAO.getCountWhereLikeAndCategoryIsNull(searchQuery, peopleFrom, peopleTo);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-    }
-
     public void processActivities(HttpServletRequest req) throws SQLException {
+        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+        ActivityDAO activityDAO = factory.getActivityDao();
         CategoriesService categoriesService = new CategoriesService();
 
         List<Integer> filteredList;
@@ -184,13 +35,11 @@ public class ActivitiesService extends Service {
         List<Activity> activityList;
         try {
             int start = 1;
-            int total = 3;
-
             int page = 1;
             if (req.getParameter("page") != null) {
                 page = Integer.parseInt(req.getParameter("page"));
                 if (page > 1)
-                    start = start + total * (page - 1);
+                    start = start + TOTAL_ACTIVITIES * (page - 1);
             }
 
             int peopleMaxCount = getMaxPeopleCount();
@@ -215,15 +64,41 @@ public class ActivitiesService extends Service {
                             .toList();
                     req.setAttribute("filterCategories", filteredList);
                     if (filteredList.size() == 1 && filteredList.contains(0)) {
-                        activityCount = getCountBySearchWhereCategoryIsOther(searchQuery, peopleFrom, peopleTo);
-                        activityList = getAllBySearchWhereCategoryIsOther(searchQuery, peopleFrom, peopleTo, start, total);
+                        activityCount = activityDAO.getCountWhereLikeAndCategoryIsNull(searchQuery, peopleFrom, peopleTo);
+                        if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                            String sort = req.getParameter("sort");
+                            String order = req.getParameter("order");
+                            if (order == null || order.isEmpty())
+                                order = "asc";
+                            activityList = activityDAO.getAllLikeAndWhereCategoryIsNullOrder(searchQuery, sort, order,
+                                    peopleFrom, peopleTo, start, TOTAL_ACTIVITIES);
+                        }
+                        activityList = activityDAO.getAllLikeAndWhereCategoryIsNull(searchQuery, peopleFrom, peopleTo,
+                                start, TOTAL_ACTIVITIES);
                     } else {
-                        activityCount = getCountBySearchWhereCategory(searchQuery, filteredList, peopleFrom, peopleTo);
-                        activityList = getAllBySearchWhereCategory(searchQuery, filteredList, peopleFrom, peopleTo, start, total);
+                        activityCount = activityDAO.getCountWhereLikeAndCategory(searchQuery, filteredList, peopleFrom, peopleTo);
+                        if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                            String sort = req.getParameter("sort");
+                            String order = req.getParameter("order");
+                            if (order == null || order.isEmpty())
+                                order = "asc";
+                            activityList = activityDAO.getAllLikeAndWhereCategoryOrder(searchQuery, filteredList, sort,
+                                    order, peopleFrom, peopleTo, start, TOTAL_ACTIVITIES);
+                        }
+                        activityList = activityDAO.getAllLikeAndWhereCategory(searchQuery, filteredList, peopleFrom,
+                                peopleTo, start, TOTAL_ACTIVITIES);
                     }
                 } else {
-                    activityCount = getCountBySearch(searchQuery, peopleFrom, peopleTo);
-                    activityList = getAllBySearch(searchQuery, peopleFrom, peopleTo, start, total);
+                    activityCount = activityDAO.getCountWhereLike(searchQuery, peopleFrom, peopleTo);
+                    if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                        String sort = req.getParameter("sort");
+                        String order = req.getParameter("order");
+                        if (order == null || order.isEmpty())
+                            order = "asc";
+                        activityList = activityDAO.getAllLikeOrder(searchQuery, sort, order, peopleFrom,
+                                peopleTo, start, TOTAL_ACTIVITIES);
+                    }
+                    activityList = activityDAO.getAllLike(searchQuery, peopleFrom, peopleTo, start, TOTAL_ACTIVITIES);
                 }
             } else if (req.getParameterValues("filter") != null) {
                 filteredList = Arrays.stream(req.getParameterValues("filter"))
@@ -231,23 +106,47 @@ public class ActivitiesService extends Service {
                         .toList();
                 req.setAttribute("filterCategories", filteredList);
                 if (filteredList.size() == 1 && filteredList.contains(0)) {
-                    activityCount = getCountWhereCategoryIsOther(peopleFrom, peopleTo);
-                    activityList = getAllWhereCategoryIsOther(peopleFrom, peopleTo,start, total);
+                    activityCount = activityDAO.getCountWhereCategoryIsNull(peopleFrom, peopleTo);
+                    if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                        String sort = req.getParameter("sort");
+                        String order = req.getParameter("order");
+                        if (order == null || order.isEmpty())
+                            order = "asc";
+                        activityList = activityDAO.getAllWhereCategoryIsNullOrder(sort, order, peopleFrom,
+                                peopleTo, start, TOTAL_ACTIVITIES);
+                    } else {
+                        activityList = activityDAO.getAllWhereCategoryIsNull(peopleFrom, peopleTo,start, TOTAL_ACTIVITIES);
+                    }
                 } else {
-                    activityCount = getCountWhereCategory(filteredList, peopleFrom, peopleTo);
-                    activityList = getAllWhereCategory(filteredList, peopleFrom, peopleTo, start, total);
+                    activityCount = activityDAO.getCountWhereCategory(filteredList, peopleFrom, peopleTo);
+                    if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                        String sort = req.getParameter("sort");
+                        String order = req.getParameter("order");
+                        if (order == null || order.isEmpty())
+                            order = "asc";
+                        activityList = activityDAO.getAllWhereCategoryOrder(filteredList, sort, order, peopleFrom,
+                                peopleTo, start, TOTAL_ACTIVITIES);
+                    } else {
+                        activityList = activityDAO.getAllWhereCategory(filteredList, peopleFrom, peopleTo, start, TOTAL_ACTIVITIES);
+                    }
                 }
+            } else if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                String sort = req.getParameter("sort");
+                String order = req.getParameter("order");
+                if (order == null || order.isEmpty())
+                    order = "asc";
+                activityCount = activityDAO.getCount(peopleFrom, peopleTo);
+                activityList = activityDAO.getAllOrder(sort, order, peopleFrom, peopleTo, start, TOTAL_ACTIVITIES);
             } else {
-                activityCount = getCount(peopleFrom, peopleTo);
-                activityList = getAll(peopleFrom, peopleTo, start, total);
+                activityCount = activityDAO.getCount(peopleFrom, peopleTo);
+                activityList = activityDAO.getAll(peopleFrom, peopleTo, start, TOTAL_ACTIVITIES);
             }
-            int pageCount = activityCount % total == 0 ? activityCount / total
-                    : activityCount / total + 1;
+            int pageCount = getPageCount(activityCount, TOTAL_ACTIVITIES);
             int previousPage = 0;
             if (page > 1)
                 previousPage = page - 1;
             int nextPage = 0;
-            if (activityCount > total && page < pageCount)
+            if (activityCount > TOTAL_ACTIVITIES && page < pageCount)
                 nextPage = page + 1;
             req.setAttribute("pageCount", pageCount);
             req.setAttribute("previousPage", previousPage);

@@ -2,11 +2,13 @@ package com.tracking.dao.mysql;
 
 import com.tracking.dao.ActivityDAO;
 import com.tracking.dao.DAOFactory;
+import com.tracking.dao.mapper.EntityMapper;
 import com.tracking.models.Activity;
 import com.tracking.models.User;
 
 import javax.servlet.http.HttpSession;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +66,7 @@ public class MysqlActivityDAO implements ActivityDAO {
 
     @Override
     public List<Activity> getAll(int peopleFrom, int peopleTo, int start, int total) throws SQLException {
-        List<Activity> activityList;
+        List<Activity> activityList = null;
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(SELECT_ALL_ACTIVITIES)) {
             activityList = new ArrayList<>();
@@ -73,15 +75,11 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setInt(++c, peopleTo);
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    Activity activity = new Activity();
-                    activity.setId(rs.getInt(COL_ID));
-                    activity.setName(rs.getString(COL_NAME));
-                    activity.setDescription(rs.getString(COL_DESCRIPTION));
+                    Activity activity = mapper.mapRow(rs);
                     activity.setCategories(withCategories(con, activity.getId()));
-                    activity.setImage(rs.getString(COL_IMAGE));
-                    activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
                     activityList.add(activity);
                 }
             }
@@ -93,8 +91,39 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public List<Activity> getAllLike(String searchQuery, int peopleFrom, int peopleTo, int start, int total) throws SQLException {
-        List<Activity> activityList;
+    public List<Activity> getAllOrder(String sort, String order, int peopleFrom, int peopleTo, int start, int total)
+            throws SQLException {
+        List<Activity> activityList = null;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(SELECT_ALL_ACTIVITIES_ORDER.replace(ORDER_BY, orderBy))) {
+            activityList = new ArrayList<>();
+            int c = 0;
+            prst.setInt(++c, peopleFrom);
+            prst.setInt(++c, peopleTo);
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
+                    activityList.add(activity);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return activityList;
+    }
+
+    @Override
+    public List<Activity> getAllLike(String searchQuery, int peopleFrom, int peopleTo, int start, int total)
+            throws SQLException {
+        List<Activity> activityList = null;
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITIES_LIKE)) {
             activityList = new ArrayList<>();
@@ -104,15 +133,11 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setInt(++c, peopleTo);
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    Activity activity = new Activity();
-                    activity.setId(rs.getInt(COL_ID));
-                    activity.setName(rs.getString(COL_NAME));
-                    activity.setDescription(rs.getString(COL_DESCRIPTION));
+                    Activity activity = mapper.mapRow(rs);
                     activity.setCategories(withCategories(con, activity.getId()));
-                    activity.setImage(rs.getString(COL_IMAGE));
-                    activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
                     activityList.add(activity);
                 }
             }
@@ -124,10 +149,43 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public List<Activity> getAllWhereCategory(List<Integer> categoryList, int peopleFrom, int peopleTo, int start, int total) throws SQLException {
+    public List<Activity> getAllLikeOrder(String searchQuery, String sort, String order, int peopleFrom, int peopleTo,
+                                          int start, int total) throws SQLException {
+        List<Activity> activityList = null;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITIES_LIKE_ORDER.replace(ORDER_BY, orderBy))) {
+            activityList = new ArrayList<>();
+            int c = 0;
+            prst.setString(++c, searchQuery + "%");
+            prst.setInt(++c, peopleFrom);
+            prst.setInt(++c, peopleTo);
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
+                    activityList.add(activity);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return activityList;
+    }
+
+    @Override
+    public List<Activity> getAllWhereCategory(List<Integer> categoryList, int peopleFrom, int peopleTo,
+                                              int start, int total) throws SQLException {
         List<Activity> activityList;
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(buildWhereInQuery(categoryList, SELECT_ACTIVITIES_WHERE_CATEGORY))) {
+             PreparedStatement prst = con.prepareStatement(buildWhereInQuery(categoryList,
+                     SELECT_ACTIVITIES_WHERE_CATEGORY))) {
             activityList = new ArrayList<>();
             int c = 0;
             for (int categoryId : categoryList)
@@ -137,15 +195,45 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setInt(++c, categoryList.size());
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    Activity activity = new Activity();
-                    activity.setId(rs.getInt(COL_ID));
-                    activity.setName(rs.getString(COL_NAME));
-                    activity.setDescription(rs.getString(COL_DESCRIPTION));
+                    Activity activity = mapper.mapRow(rs);
                     activity.setCategories(withCategories(con, activity.getId()));
-                    activity.setImage(rs.getString(COL_IMAGE));
-                    activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
+                    activityList.add(activity);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return activityList;
+    }
+
+    @Override
+    public List<Activity> getAllWhereCategoryOrder(List<Integer> categoryList, String sort, String order, int peopleFrom,
+                                                   int peopleTo, int start, int total) throws SQLException {
+        List<Activity> activityList;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(buildWhereInQuery(categoryList,
+                     SELECT_ACTIVITIES_WHERE_CATEGORY_ORDER.replace(ORDER_BY, orderBy)))) {
+            activityList = new ArrayList<>();
+            int c = 0;
+            for (int categoryId : categoryList)
+                prst.setInt(++c, categoryId);
+            prst.setInt(++c, peopleFrom);
+            prst.setInt(++c, peopleTo);
+            prst.setInt(++c, categoryList.size());
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
                     activityList.add(activity);
                 }
             }
@@ -167,15 +255,11 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setInt(++c, peopleTo);
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    Activity activity = new Activity();
-                    activity.setId(rs.getInt(COL_ID));
-                    activity.setName(rs.getString(COL_NAME));
-                    activity.setDescription(rs.getString(COL_DESCRIPTION));
-                    activity.setCategories(null);
-                    activity.setImage(rs.getString(COL_IMAGE));
-                    activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
                     activityList.add(activity);
                 }
             }
@@ -187,9 +271,39 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public List<Activity> getAllLikeAndWhereCategory(String searchQuery, List<Integer> categoryList,
-                                                     int peopleFrom, int peopleTo, int start, int total)
-            throws SQLException {
+    public List<Activity> getAllWhereCategoryIsNullOrder(String sort, String order, int peopleFrom, int peopleTo,
+                                                         int start, int total) throws SQLException {
+        List<Activity> activityList;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITIES_WHERE_CATEGORY_IS_NULL_ORDER
+                     .replace(ORDER_BY, orderBy))) {
+            activityList = new ArrayList<>();
+            int c = 0;
+            prst.setInt(++c, peopleFrom);
+            prst.setInt(++c, peopleTo);
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
+                    activityList.add(activity);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return activityList;
+    }
+
+    @Override
+    public List<Activity> getAllLikeAndWhereCategory(String searchQuery, List<Integer> categoryList, int peopleFrom, int peopleTo,
+                                                     int start, int total) throws SQLException {
         List<Activity> activityList;
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(buildWhereInQuery(categoryList, SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY))) {
@@ -203,15 +317,46 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setInt(++c, categoryList.size());
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    Activity activity = new Activity();
-                    activity.setId(rs.getInt(COL_ID));
-                    activity.setName(rs.getString(COL_NAME));
-                    activity.setDescription(rs.getString(COL_DESCRIPTION));
+                    Activity activity = mapper.mapRow(rs);
                     activity.setCategories(withCategories(con, activity.getId()));
-                    activity.setImage(rs.getString(COL_IMAGE));
-                    activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
+                    activityList.add(activity);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return activityList;
+    }
+
+    @Override
+    public List<Activity> getAllLikeAndWhereCategoryOrder(String searchQuery, List<Integer> categoryList, String sort, String order,
+                                                          int peopleFrom, int peopleTo, int start, int total) throws SQLException {
+        List<Activity> activityList;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(buildWhereInQuery(categoryList,
+                     SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_ORDER.replace(ORDER_BY, orderBy)))) {
+            activityList = new ArrayList<>();
+            int c = 0;
+            prst.setString(++c, searchQuery + "%");
+            for (int categoryId : categoryList)
+                prst.setInt(++c, categoryId);
+            prst.setInt(++c, peopleFrom);
+            prst.setInt(++c, peopleTo);
+            prst.setInt(++c, categoryList.size());
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
                     activityList.add(activity);
                 }
             }
@@ -235,15 +380,43 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setInt(++c, peopleTo);
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    Activity activity = new Activity();
-                    activity.setId(rs.getInt(COL_ID));
-                    activity.setName(rs.getString(COL_NAME));
-                    activity.setDescription(rs.getString(COL_DESCRIPTION));
-                    activity.setCategories(null);
-                    activity.setImage(rs.getString(COL_IMAGE));
-                    activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
+                    activityList.add(activity);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return activityList;
+    }
+
+    @Override
+    public List<Activity> getAllLikeAndWhereCategoryIsNullOrder(String searchQuery, String sort, String order,
+                                                                int peopleFrom, int peopleTo, int start, int total) throws SQLException {
+        List<Activity> activityList;
+        String orderBy = sort + " " + order;;
+        if (sort.equals("create_time") || sort.equals("people_count"))
+            orderBy = sort + " " + order + ", name";
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_ORDER
+                     .replace(ORDER_BY, orderBy))) {
+            activityList = new ArrayList<>();
+            int c = 0;
+            prst.setString(++c, searchQuery + "%");
+            prst.setInt(++c, peopleFrom);
+            prst.setInt(++c, peopleTo);
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            ActivityMapper mapper = new ActivityMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Activity activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
                     activityList.add(activity);
                 }
             }
@@ -441,15 +614,10 @@ public class MysqlActivityDAO implements ActivityDAO {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITY)) {
             prst.setInt(1, id);
+            ActivityMapper mapper = new ActivityMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 if (rs.next()) {
-                    activity = new Activity();
-                    activity.setId(rs.getInt(COL_ID));
-                    activity.setName(rs.getString(COL_NAME));
-                    activity.setDescription(rs.getString(COL_DESCRIPTION));
-                    activity.setCategories(withCategories(con, activity.getId()));
-                    activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
-                    activity.setImage(rs.getString(COL_IMAGE));
+                    activity = mapper.mapRow(rs);
                 }
             }
         } catch (SQLException e) {
@@ -643,5 +811,25 @@ public class MysqlActivityDAO implements ActivityDAO {
 
     private boolean checkErrors(HttpSession session, Activity activity) {
         return !ActivityDAO.validate(session, activity);
+    }
+
+    private static class ActivityMapper implements EntityMapper<Activity> {
+        @Override
+        public Activity mapRow(ResultSet rs) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd, HH:mm");
+                Activity activity = new Activity();
+                activity.setId(rs.getInt(COL_ID));
+                activity.setName(rs.getString(COL_NAME));
+                activity.setDescription(rs.getString(COL_DESCRIPTION));
+                activity.setImage(rs.getString(COL_IMAGE));
+                activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
+                activity.setCreatorId(rs.getInt(COL_CREATOR_ID));
+                activity.setCreateTime(sdf.format(rs.getTimestamp(COL_CREATE_TIME)));
+                return activity;
+            } catch (SQLException e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 }

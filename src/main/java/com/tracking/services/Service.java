@@ -11,6 +11,11 @@ import java.util.Enumeration;
 
 public abstract class Service {
 
+    public static final int TOTAL_ACTIVITIES = 6;
+    public static final int TOTAL_CATEGORIES = 10;
+    public static final int TOTAL_USERS = 10;
+    public static final int TOTAL_USERS_ACTIVITY = 6;
+
     public void setQueryStringForPagination(HttpServletRequest req) {
         Enumeration<String> params = req.getParameterNames();
         StringBuilder query = new StringBuilder();

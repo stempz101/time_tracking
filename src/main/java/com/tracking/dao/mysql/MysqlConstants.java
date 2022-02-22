@@ -6,8 +6,7 @@ public abstract class MysqlConstants {
     }
 
     // REPLACE VALUES
-    public static final String SORT = "set_sorted";
-    public static final String ORDER = "set_order";
+    public static final String ORDER_BY = "set_order_by";
     public static final String IN = "set_in";
 
     // FIELDS
@@ -15,6 +14,7 @@ public abstract class MysqlConstants {
     public static final String COL_ACTIVITY_ID = "activity_id";
     public static final String COL_CATEGORY_ID = "category_id";
     public static final String COL_USER_ID = "user_id";
+    public static final String COL_CREATOR_ID = "creator_id";
 
     public static final String COL_NAME = "name";
     public static final String COL_NAME_EN = "name_en";
@@ -35,6 +35,7 @@ public abstract class MysqlConstants {
     public static final String COL_STATUS = "status";
     public static final String COL_PEOPLE_COUNT = "people_count";
     public static final String COL_ACTIVITY_COUNT = "activity_count";
+    public static final String COL_CREATE_TIME = "create_time";
 
     // QUERIES
     public static final String INSERT_USER = "INSERT INTO users (last_name, first_name, email, password) " +
@@ -54,7 +55,7 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ALL_USERS_ORDER = "SELECT id, last_name, first_name, image, " +
             "activity_count, spent_time, is_admin, is_blocked FROM users " +
-            "ORDER BY " + SORT + " " + ORDER + " " +
+            "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
     public static final String SELECT_ALL_USERS_WHERE_NAME = "SELECT id, last_name, first_name, image, " +
             "activity_count, spent_time, is_admin, is_blocked FROM users " +
@@ -64,7 +65,7 @@ public abstract class MysqlConstants {
     public static final String SELECT_ALL_USERS_WHERE_NAME_ORDER = "SELECT id, last_name, first_name, image, " +
             "activity_count, spent_time, is_admin, is_blocked FROM users " +
             "WHERE last_name LIKE ? AND first_name LIKE ? " +
-            "ORDER BY " + SORT + " " + ORDER + " " +
+            "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
     public static final String GET_USER_COUNT = "SELECT COUNT(*) count FROM users";
     public static final String GET_USER_COUNT_WHERE_NAME = "SELECT COUNT(*) count FROM users " +
@@ -101,37 +102,69 @@ public abstract class MysqlConstants {
 
     public static final String SELECT_ACTIVITY = "SELECT * FROM activities WHERE id = ?";
     public static final String SELECT_ALL_ACTIVITIES = "SELECT * FROM activities WHERE people_count >= ? AND people_count <= ? " +
-            "ORDER BY people_count DESC, id DESC LIMIT ?, ?";
+            "ORDER BY people_count DESC, create_time DESC, name LIMIT ?, ?";
+    public static final String SELECT_ALL_ACTIVITIES_ORDER = "SELECT * FROM activities WHERE people_count >= ? AND people_count <= ? " +
+            "ORDER BY " + ORDER_BY + " LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE = "SELECT * FROM activities WHERE name LIKE ? " +
             "AND people_count >= ? AND people_count <= ? " +
-            "ORDER BY people_count DESC, id DESC LIMIT ?, ?";
+            "ORDER BY people_count DESC, create_time DESC, name LIMIT ?, ?";
+    public static final String SELECT_ACTIVITIES_LIKE_ORDER = "SELECT * FROM activities WHERE name LIKE ? " +
+            "AND people_count >= ? AND people_count <= ? " +
+            "ORDER BY " + ORDER_BY + " LIMIT ?, ?";
     public static final String SELECT_ACTIVITY_CATEGORIES = "SELECT * FROM activities_categories WHERE activity_id = ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY = "SELECT * FROM activities " +
             "JOIN activities_categories ON id = activity_id " +
             "WHERE category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
             "HAVING COUNT(*) = ? " +
-            "ORDER BY id DESC " +
+            "ORDER BY people_count DESC, create_time DESC, name " +
+            "LIMIT ?, ?";
+    public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " +
+            "JOIN activities_categories ON id = activity_id " +
+            "WHERE category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
+            "GROUP BY id " +
+            "HAVING COUNT(*) = ? " +
+            "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON id = activity_id " +
             "WHERE category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
-            "ORDER BY id DESC " +
+            "ORDER BY people_count DESC, create_time DESC, name " +
+            "LIMIT ?, ?";
+    public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " +
+            "LEFT JOIN activities_categories ON id = activity_id " +
+            "WHERE category_id IS NULL AND people_count >= ? AND people_count <= ? " +
+            "GROUP BY id " +
+            "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY = "SELECT * FROM activities " +
             "JOIN activities_categories ON id = activity_id " +
             "WHERE name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
             "HAVING COUNT(*) = ? " +
-            "ORDER BY id DESC " +
+            "ORDER BY people_count DESC, create_time DESC, name " +
+            "LIMIT ?, ?";
+    public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " +
+            "JOIN activities_categories ON id = activity_id " +
+            "WHERE name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
+            "GROUP BY id " +
+            "HAVING COUNT(*) = ? " +
+            "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON id = activity_id " +
             "WHERE name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
             "HAVING COUNT(*) = 1 " +
-            "ORDER BY id DESC " +
+            "ORDER BY people_count DESC, create_time DESC, name " +
+            "LIMIT ?, ?";
+    public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " +
+            "LEFT JOIN activities_categories ON id = activity_id " +
+            "WHERE name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
+            "GROUP BY id " +
+            "HAVING COUNT(*) = 1 " +
+            "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
     public static final String GET_ACTIVITY_COUNT = "SELECT COUNT(*) count FROM activities WHERE people_count >= ? AND people_count <= ?";
     public static final String GET_ACTIVITIES_LIKE_COUNT = "SELECT COUNT(*) count FROM activities " +

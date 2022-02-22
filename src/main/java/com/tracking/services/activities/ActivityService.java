@@ -157,26 +157,24 @@ public class ActivityService extends Service {
 
             int userActivityCount = activity.getPeopleCount();
             int start = 1;
-            int total = 6;
-            int page = getPageCount(userActivityCount, total);
-            int pageCount = userActivityCount % total == 0 ? userActivityCount / total
-                    : userActivityCount / total + 1;
+            int page = 1;
+            int pageCount = getPageCount(userActivityCount, TOTAL_USERS_ACTIVITY);
             if (req.getParameter("page") != null) {
                 page = Integer.parseInt(req.getParameter("page"));
                 if (page <= 0 || page > pageCount)
                     return false;
-                start = start + total * (page - 1);
+                start = start + TOTAL_USERS_ACTIVITY * (page - 1);
             }
             int previousPage = 0;
             if (page > 1)
                 previousPage = page - 1;
             int nextPage = 0;
-            if (userActivityCount > total && page < pageCount)
+            if (userActivityCount > TOTAL_USERS_ACTIVITY && page < pageCount)
                 nextPage = page + 1;
 
             HttpSession session = req.getSession();
             List<Category> categories = getActivityCategories(activity.getCategories(), Language.EN); // localize
-            List<UserActivity> users = getActivityUsers(activityId, start, total);
+            List<UserActivity> users = getActivityUsers(activityId, start, TOTAL_USERS_ACTIVITY);
             UserActivity userActivity = getCreatorInfo((User) session.getAttribute("authUser"), activityId);
             List<User> usersNotInActivity = getAvailableUsers(activityId);
             User creator = getCreator(activityId);

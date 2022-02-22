@@ -54,24 +54,22 @@ public class CategoriesService extends Service {
         try {
             int categoryCount = getCount();
             int start = 1;
-            int total = 10;
             int page = 1;
-            int pageCount = categoryCount % total == 0 ? categoryCount / total
-                    : categoryCount / total + 1;
+            int pageCount = getPageCount(categoryCount, TOTAL_CATEGORIES);
             if (req.getParameter("page") != null) {
                 page = Integer.parseInt(req.getParameter("page"));
                 if (page <= 0 || page > pageCount)
                     return false;
-                start = start + total * (page - 1);
+                start = start + TOTAL_CATEGORIES * (page - 1);
             }
             int previousPage = 0;
             if (page > 1)
                 previousPage = page - 1;
             int nextPage = 0;
-            if (categoryCount > total && page < pageCount)
+            if (categoryCount > TOTAL_CATEGORIES && page < pageCount)
                 nextPage = page + 1;
 
-            List<Category> categoryList = getAllCategories(Language.EN, start, total); // localize
+            List<Category> categoryList = getAllCategories(Language.EN, start, TOTAL_CATEGORIES); // localize
 
             req.setAttribute("pageCount", pageCount);
             req.setAttribute("previousPage", previousPage);

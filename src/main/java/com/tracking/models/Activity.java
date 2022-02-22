@@ -11,6 +11,7 @@ public class Activity {
     private String image;
     private int peopleCount;
     private int creatorId;
+    private String createTime;
     private Status status;
 
     public Activity() {
@@ -80,6 +81,14 @@ public class Activity {
 
     public void setCreatorId(int creatorId) {
         this.creatorId = creatorId;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
     }
 
     public Status getStatus() {
