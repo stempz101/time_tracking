@@ -28,6 +28,13 @@ public interface UserDAO {
 
     UserActivity getWhereInActivity(User user, int activityId) throws SQLException;
 
+    List<User> getAllOrder(String sort, String order, int start, int total) throws SQLException;
+
+    List<User> getAllWhereName(String lastName, String firstName, int start, int total) throws SQLException;
+
+    List<User> getAllWhereNameOrder(String lastName, String firstName, String sort, String order,
+                                    int start, int total) throws SQLException;
+
     User getById(int userId) throws SQLException;
 
     User getByEmail(String email) throws SQLException;
@@ -35,6 +42,8 @@ public interface UserDAO {
     User getUser(PreparedStatement prst) throws SQLException;
 
     int getCount() throws SQLException;
+
+    int getCountWhereName(String lastName, String firstName) throws SQLException;
 
     void setAdmin(int userId, boolean isAdmin) throws SQLException;
 

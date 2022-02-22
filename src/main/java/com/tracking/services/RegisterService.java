@@ -7,7 +7,7 @@ import com.tracking.models.User;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 
-public class RegisterService {
+public class RegisterService extends Service {
     public User registerUser(HttpSession session, String lastName, String firstName, String email, String password) {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
         UserDAO userDAO = factory.getUserDao();

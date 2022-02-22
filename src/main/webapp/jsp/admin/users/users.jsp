@@ -79,6 +79,104 @@
         <h1>Users</h1>
     </div>
     <div class="row">
+        <h4>Search:</h4>
+    </div>
+    <div class="row">
+        <div class="d-inline-flex justify-content-between">
+            <div class="d-flex">
+                <form action="<%= request.getContextPath() + "/a/users" %>"
+                      class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
+                      method="get">
+                    <input type="search" name="lastName" class="form-control w-50" placeholder="Smith"
+                           aria-label="Last Name" value="${param.lastName}">
+                    <input type="search" name="firstName" class="form-control w-50 ms-2" placeholder="John"
+                           aria-label="First Name" value="${param.firstName}">
+                    <button type="submit" class="btn btn-primary ms-2">Search</button>
+                </form>
+            </div>
+            <div class="d-flex align-items-center">
+                <form action="<%=request.getContextPath() + "/a/users"%>" method="get">
+                    <c:if test="${param.lastName != null && not empty param.lastName}">
+                        <input type="hidden" name="lastName" value="${param.lastName}">
+                    </c:if>
+                    <c:if test="${param.firstName != null && not empty param.firstName}">
+                        <input type="hidden" name="firstName" value="${param.firstName}">
+                    </c:if>
+                    <div class="d-flex">
+                        <select class="form-select" aria-label="Sort by" name="sortBy" id="sort">
+                            <option value="">Sort by</option>
+                            <c:choose>
+                                <c:when test="${param.sortBy.equals('id')}">
+                                    <option value="id" selected>id</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="id">id</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sortBy.equals('last_name')}">
+                                    <option value="last_name" selected>name</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="last_name">name</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sortBy.equals('activity_count')}">
+                                    <option value="activity_count" selected>activities</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="activity_count">activities</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sortBy.equals('spent_time')}">
+                                    <option value="spent_time" selected>time</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="spent_time">time</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sortBy.equals('is_admin')}">
+                                    <option value="is_admin" selected>role</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="is_admin">role</option>
+                                </c:otherwise>
+                            </c:choose>
+                        </select>
+                        <select class="form-select ms-2" aria-label="Order by" name="order" id="orderBy"
+                                required>
+                            <c:choose>
+                                <c:when test="${param.order.equals('asc') ||
+                                                param.order == null ||
+                                                empty param.order}">
+                                    <option value="asc" selected>ascending</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="asc">ascending</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.order.equals('desc')}">
+                                    <option value="desc" selected>descending</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="desc">descending</option>
+                                </c:otherwise>
+                            </c:choose>
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="width: 100px; margin-left: 11px;"
+                                value="1">
+                            Sort
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <div class="">
             <table class="table text-center align-middle table-bordered table-striped mt-2">
                 <thead>
@@ -227,10 +325,19 @@
                                 </li>
                             </c:when>
                             <c:otherwise>
-                                <a class="page-link"
-                                   href="<%=request.getContextPath() + "/a/users"%>?page=${requestScope.previousPage}">
-                                    Previous
-                                </a>
+                                <c:choose>
+                                    <c:when test="${pageContext.request.queryString != null}">
+                                        <a class="page-link"
+                                           href="${requestScope.queryForPagination}&page=${requestScope.previousPage}">
+                                            Previous
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a class="page-link" href="?page=${requestScope.previousPage}">
+                                            Previous
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:otherwise>
                         </c:choose>
                             <%--                        Page Buttons --%>
@@ -243,10 +350,15 @@
                                 </c:when>
                                 <c:otherwise>
                                     <li class="page-item">
-                                        <a class="page-link"
-                                           href="<%=request.getContextPath() + "/a/users"%>?page=${i}">
-                                                ${i}
-                                        </a>
+                                        <c:choose>
+                                            <c:when test="${pageContext.request.queryString != null}">
+                                                <a class="page-link"
+                                                   href="${requestScope.queryForPagination}&page=${i}">${i}</a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a class="page-link" href="?page=${i}">${i}</a>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </li>
                                 </c:otherwise>
                             </c:choose>
@@ -259,8 +371,15 @@
                                 </li>
                             </c:when>
                             <c:otherwise>
-                                <a class="page-link"
-                                   href="<%=request.getContextPath() + "/a/users"%>?page=${requestScope.nextPage}">Next</a>
+                                <c:choose>
+                                    <c:when test="${pageContext.request.queryString != null}">
+                                        <a class="page-link"
+                                           href="${requestScope.queryForPagination}&page=${requestScope.nextPage}">Next</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a class="page-link" href="?page=${requestScope.nextPage}">Next</a>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:otherwise>
                         </c:choose>
                     </ul>

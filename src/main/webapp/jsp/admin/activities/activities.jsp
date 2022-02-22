@@ -69,27 +69,11 @@
         <h4>Search:</h4>
     </div>
     <div class="row">
-        <c:choose>
-            <c:when test="${pageContext.request.queryString == null || param.page != null}">
-                <form action="<%= request.getContextPath() + "/a/activities" %>"
-                      class="d-flex col-12 col-lg-auto me-lg-auto mb-2 justify-content-center align-items-center w-50" method="get">
-                    <input type="search" name="search" class="form-control" placeholder="Search..." aria-label="Search" value="">
-                    <button type="submit" class="btn btn-primary ms-2">Search</button>
-                </form>
-            </c:when>
-            <c:otherwise>
-                <c:url var="activityURL" value="/a/activities">
-                    <c:if test="${param.filter != null}">
-                        <c:param name="filter" value="${param.filter}" />
-                    </c:if>
-                </c:url>
-                <form action="${activityURL}"
-                      class="d-flex col-12 col-lg-auto me-lg-auto mb-2 justify-content-center align-items-center w-50" method="get">
-                    <input type="search" name="search" class="form-control" placeholder="Search..." aria-label="Search" value="">
-                    <button type="submit" class="btn btn-primary ms-2">Search</button>
-                </form>
-            </c:otherwise>
-        </c:choose>
+        <form action="<%= request.getContextPath() + "/a/activities" %>"
+              class="d-flex col-12 col-lg-auto me-lg-auto mb-2 justify-content-center align-items-center w-50" method="get">
+            <input type="search" name="search" class="form-control" placeholder="Search..." aria-label="Search" value="${requestScope.searchQuery}">
+            <button type="submit" class="btn btn-primary ms-2">Search</button>
+        </form>
     </div>
     <form action="<%= request.getContextPath() + "/a/activities" %>" method="get">
         <div class="row">

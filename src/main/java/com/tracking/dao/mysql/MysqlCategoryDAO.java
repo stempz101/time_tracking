@@ -281,7 +281,7 @@ public class MysqlCategoryDAO implements CategoryDAO {
             params.append(", ");
         }
         params.delete(params.length() - 2, params.length());
-        return mysqlQuery.replace("@", params.toString());
+        return mysqlQuery.replace(IN, params.toString());
     }
 
     private boolean checkErrors(HttpSession session, String nameEN, String nameUA) {

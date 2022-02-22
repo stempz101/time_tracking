@@ -217,6 +217,112 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
+    public List<User> getAllOrder(String sort, String order, int start, int total) throws SQLException {
+        List<User> userList = null;
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(SELECT_ALL_USERS_ORDER.replace(SORT, sort).replace(ORDER, order))) {
+            userList = new ArrayList<>();
+            int c = 0;
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt(COL_ID));
+                    user.setLastName((rs.getString(COL_LAST_NAME)));
+                    user.setFirstName(rs.getString(COL_FIRST_NAME));
+                    user.setImage(rs.getString(COL_IMAGE));
+                    user.setActivityCount(rs.getInt(COL_ACTIVITY_COUNT));
+                    user.setSpentTime(rs.getLong(COL_SPENT_TIME));
+                    user.setAdmin(rs.getBoolean(COL_IS_ADMIN));
+                    user.setBlocked(rs.getBoolean(COL_IS_BLOCKED));
+                    userList.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return userList;
+    }
+
+    @Override
+    public List<User> getAllWhereName(String lastName, String firstName, int start, int total) throws SQLException {
+        List<User> userList = null;
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(SELECT_ALL_USERS_WHERE_NAME)) {
+            userList = new ArrayList<>();
+            int c = 0;
+            if (lastName != null)
+                prst.setString(++c, lastName + "%");
+            else
+                prst.setString(++c, "%");
+            if (firstName != null)
+                prst.setString(++c, firstName + "%");
+            else
+                prst.setString(++c, "%");
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt(COL_ID));
+                    user.setLastName((rs.getString(COL_LAST_NAME)));
+                    user.setFirstName(rs.getString(COL_FIRST_NAME));
+                    user.setImage(rs.getString(COL_IMAGE));
+                    user.setActivityCount(rs.getInt(COL_ACTIVITY_COUNT));
+                    user.setSpentTime(rs.getLong(COL_SPENT_TIME));
+                    user.setAdmin(rs.getBoolean(COL_IS_ADMIN));
+                    user.setBlocked(rs.getBoolean(COL_IS_BLOCKED));
+                    userList.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return userList;
+    }
+
+    @Override
+    public List<User> getAllWhereNameOrder(String lastName, String firstName, String sort, String order, int start, int total) throws SQLException {
+        List<User> userList = null;
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(SELECT_ALL_USERS_WHERE_NAME_ORDER.replace(SORT, sort).replace(ORDER, order))) {
+            userList = new ArrayList<>();
+            int c = 0;
+            if (lastName != null)
+                prst.setString(++c, lastName + "%");
+            else
+                prst.setString(++c, "%");
+            if (firstName != null)
+                prst.setString(++c, firstName + "%");
+            else
+                prst.setString(++c, "%");
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt(COL_ID));
+                    user.setLastName((rs.getString(COL_LAST_NAME)));
+                    user.setFirstName(rs.getString(COL_FIRST_NAME));
+                    user.setImage(rs.getString(COL_IMAGE));
+                    user.setActivityCount(rs.getInt(COL_ACTIVITY_COUNT));
+                    user.setSpentTime(rs.getLong(COL_SPENT_TIME));
+                    user.setAdmin(rs.getBoolean(COL_IS_ADMIN));
+                    user.setBlocked(rs.getBoolean(COL_IS_BLOCKED));
+                    userList.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+        return userList;
+    }
+
+    @Override
     public User getById(int userId) throws SQLException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(SELECT_USER)) {
@@ -269,6 +375,31 @@ public class MysqlUserDAO implements UserDAO {
             if (rs.next())
                 count = rs.getInt(COL_COUNT);
             return count;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+    }
+
+    @Override
+    public int getCountWhereName(String lastName, String firstName) throws SQLException {
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(GET_USER_COUNT_WHERE_NAME)) {
+            int c = 0;
+            if (lastName != null)
+                prst.setString(++c, lastName + "%");
+            else
+                prst.setString(++c, "%");
+            if (firstName != null)
+                prst.setString(++c, firstName + "%");
+            else
+                prst.setString(++c, "%");
+            try (ResultSet rs = prst.executeQuery()) {
+                int count = 0;
+                if (rs.next())
+                    count = rs.getInt(COL_COUNT);
+                return count;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException();

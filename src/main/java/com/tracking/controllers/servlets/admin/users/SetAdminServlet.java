@@ -2,6 +2,7 @@ package com.tracking.controllers.servlets.admin.users;
 
 import com.tracking.dao.DAOFactory;
 import com.tracking.dao.UserDAO;
+import com.tracking.services.users.UsersService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +15,14 @@ import java.sql.SQLException;
 
 @WebServlet("/a/user-set-admin")
 public class SetAdminServlet extends HttpServlet {
+
+    UsersService usersService = null;
+
+    @Override
+    public void init() throws ServletException {
+        usersService = new UsersService();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doPost(req, resp);
@@ -23,18 +32,13 @@ public class SetAdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         int userId = Integer.parseInt(req.getParameter("id"));
         boolean isAdmin = Boolean.parseBoolean(req.getParameter("value"));
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        UserDAO userDAO = factory.getUserDao();
-
         try {
             HttpSession session = req.getSession();
-            if (isAdmin) {
-                userDAO.setAdmin(userId, true);
+            usersService.setAdmin(userId, isAdmin);
+            if (isAdmin)
                 session.setAttribute("successMessage", "");
-            } else {
-                userDAO.setAdmin(userId, false);
+            else
                 session.setAttribute("successMessage", "");
-            }
             resp.sendRedirect(req.getContextPath() + "/a/users");
         } catch (SQLException e) {
             e.printStackTrace();

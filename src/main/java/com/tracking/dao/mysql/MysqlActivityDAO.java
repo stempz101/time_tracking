@@ -605,7 +605,7 @@ public class MysqlActivityDAO implements ActivityDAO {
             params.append(", ");
         }
         params.delete(params.length() - 2, params.length());
-        return mysqlQuery.replace("@", params.toString());
+        return mysqlQuery.replace(IN, params.toString());
     }
 
     private List<Integer> withCategories(Connection con, int activityId) throws SQLException {

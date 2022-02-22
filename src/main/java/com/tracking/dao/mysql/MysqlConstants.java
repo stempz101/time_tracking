@@ -5,6 +5,11 @@ public abstract class MysqlConstants {
 
     }
 
+    // REPLACE VALUES
+    public static final String SORT = "set_sorted";
+    public static final String ORDER = "set_order";
+    public static final String IN = "set_in";
+
     // FIELDS
     public static final String COL_ID = "id";
     public static final String COL_ACTIVITY_ID = "activity_id";
@@ -45,10 +50,25 @@ public abstract class MysqlConstants {
     public static final String SELECT_USER_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
     public static final String SELECT_ALL_USERS = "SELECT id, last_name, first_name, image, " +
             "activity_count, spent_time, is_admin, is_blocked FROM users " +
-            "GROUP BY id " +
             "ORDER BY is_admin DESC, last_name " +
             "LIMIT ?, ?";
+    public static final String SELECT_ALL_USERS_ORDER = "SELECT id, last_name, first_name, image, " +
+            "activity_count, spent_time, is_admin, is_blocked FROM users " +
+            "ORDER BY " + SORT + " " + ORDER + " " +
+            "LIMIT ?, ?";
+    public static final String SELECT_ALL_USERS_WHERE_NAME = "SELECT id, last_name, first_name, image, " +
+            "activity_count, spent_time, is_admin, is_blocked FROM users " +
+            "WHERE last_name LIKE ? AND first_name LIKE ? " +
+            "ORDER BY is_admin DESC, last_name " +
+            "LIMIT ?, ?";
+    public static final String SELECT_ALL_USERS_WHERE_NAME_ORDER = "SELECT id, last_name, first_name, image, " +
+            "activity_count, spent_time, is_admin, is_blocked FROM users " +
+            "WHERE last_name LIKE ? AND first_name LIKE ? " +
+            "ORDER BY " + SORT + " " + ORDER + " " +
+            "LIMIT ?, ?";
     public static final String GET_USER_COUNT = "SELECT COUNT(*) count FROM users";
+    public static final String GET_USER_COUNT_WHERE_NAME = "SELECT COUNT(*) count FROM users " +
+            "WHERE last_name LIKE ? AND first_name LIKE ?";
     public static final String SET_USER_ADMIN = "UPDATE users SET is_admin = ? WHERE id = ?";
     public static final String SET_USER_BLOCK = "UPDATE users SET is_blocked = ? WHERE id = ?";
     public static final String UPDATE_USER_ACTIVITY_COUNT = "UPDATE users SET activity_count = (SELECT COUNT(*) " +
@@ -88,7 +108,7 @@ public abstract class MysqlConstants {
     public static final String SELECT_ACTIVITY_CATEGORIES = "SELECT * FROM activities_categories WHERE activity_id = ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY = "SELECT * FROM activities " +
             "JOIN activities_categories ON id = activity_id " +
-            "WHERE category_id IN (@) AND people_count >= ? AND people_count <= ? " +
+            "WHERE category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
             "HAVING COUNT(*) = ? " +
             "ORDER BY id DESC " +
@@ -101,7 +121,7 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY = "SELECT * FROM activities " +
             "JOIN activities_categories ON id = activity_id " +
-            "WHERE name LIKE ? AND category_id IN (@) AND people_count >= ? AND people_count <= ? " +
+            "WHERE name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
             "HAVING COUNT(*) = ? " +
             "ORDER BY id DESC " +
@@ -119,7 +139,7 @@ public abstract class MysqlConstants {
     public static final String GET_ACTIVITIES_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " +
             "(SELECT COUNT(*) FROM activities " +
             "JOIN activities_categories ON id = activity_id " +
-            "WHERE category_id IN (@) AND people_count >= ? AND people_count <= ? " +
+            "WHERE category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
             "HAVING COUNT(*) = ?) a";
     public static final String GET_ACTIVITIES_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " +
@@ -130,7 +150,7 @@ public abstract class MysqlConstants {
     public static final String GET_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " +
             "(SELECT * FROM activities " +
             "JOIN activities_categories ON id = activity_id " +
-            "WHERE name LIKE ? AND category_id IN (@) AND people_count >= ? AND people_count <= ? " +
+            "WHERE name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY id " +
             "HAVING COUNT(*) = ?) a";
     public static final String GET_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " +
@@ -162,8 +182,8 @@ public abstract class MysqlConstants {
     public static final String SELECT_ALL_CATEGORIES_UA = "SELECT * FROM categories ORDER BY name_ua";
     public static final String SELECT_ALL_CATEGORIES_EN_LIMIT = "SELECT * FROM categories ORDER BY name_en LIMIT ?, ?";
     public static final String SELECT_ALL_CATEGORIES_UA_LIMIT = "SELECT * FROM categories ORDER BY name_ua LIMIT ?, ?";
-    public static final String SELECT_ALL_CATEGORIES_BY_ID_EN = "SELECT * FROM categories WHERE id IN (@) ORDER BY name_en";
-    public static final String SELECT_ALL_CATEGORIES_BY_ID_UA = "SELECT * FROM categories WHERE id IN (@) ORDER BY name_ua";
+    public static final String SELECT_ALL_CATEGORIES_BY_ID_EN = "SELECT * FROM categories WHERE id IN (" + IN + ") ORDER BY name_en";
+    public static final String SELECT_ALL_CATEGORIES_BY_ID_UA = "SELECT * FROM categories WHERE id IN (" + IN + ") ORDER BY name_ua";
     public static final String SELECT_CATEGORY = "SELECT * FROM categories WHERE id = ?";
     public static final String SELECT_CATEGORY_BY_NAME_EN = "SELECT * FROM categories WHERE name_en = ?";
     public static final String SELECT_CATEGORY_BY_NAME_UA = "SELECT * FROM categories WHERE name_ua = ?";

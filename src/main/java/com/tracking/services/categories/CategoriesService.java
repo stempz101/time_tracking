@@ -4,6 +4,7 @@ import com.tracking.dao.CategoryDAO;
 import com.tracking.dao.DAOFactory;
 import com.tracking.lang.Language;
 import com.tracking.models.Category;
+import com.tracking.services.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-public class CategoriesService {
+public class CategoriesService extends Service {
     public List<Category> getAllCategories(Language language) throws SQLException {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
         CategoryDAO categoryDAO = factory.getCategoryDao();
@@ -49,7 +50,7 @@ public class CategoriesService {
         }
     }
 
-    public void processCategories(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
+    public boolean processCategories(HttpServletRequest req) throws IOException, SQLException {
         try {
             int categoryCount = getCount();
             int start = 1;
@@ -59,10 +60,8 @@ public class CategoriesService {
                     : categoryCount / total + 1;
             if (req.getParameter("page") != null) {
                 page = Integer.parseInt(req.getParameter("page"));
-                if (page <= 0 || page > pageCount) {
-                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    return;
-                }
+                if (page <= 0 || page > pageCount)
+                    return false;
                 start = start + total * (page - 1);
             }
             int previousPage = 0;
@@ -82,5 +81,6 @@ public class CategoriesService {
             e.printStackTrace();
             throw new SQLException();
         }
+        return true;
     }
 }

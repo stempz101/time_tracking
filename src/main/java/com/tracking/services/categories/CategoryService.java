@@ -3,11 +3,12 @@ package com.tracking.services.categories;
 import com.tracking.dao.CategoryDAO;
 import com.tracking.dao.DAOFactory;
 import com.tracking.models.Category;
+import com.tracking.services.Service;
 
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 
-public class CategoryService {
+public class CategoryService extends Service {
     public boolean add(HttpSession session, String nameEN, String nameUA) throws SQLException {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
         CategoryDAO categoryDAO = factory.getCategoryDao();

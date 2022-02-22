@@ -1,4 +1,4 @@
-package com.tracking.controllers.servlets.admin.activities.activity;
+package com.tracking.controllers.servlets.general.activity;
 
 import com.tracking.dao.ActivityDAO;
 import com.tracking.dao.CategoryDAO;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet("/a/activity")
+@WebServlet(urlPatterns = {"/u/activity", "/a/activity"})
 public class ActivityServlet extends HttpServlet {
 
     ActivityService activityService = null;
@@ -36,7 +36,10 @@ public class ActivityServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            activityService.getProcess(req, resp);
+            if (!activityService.processActivity(req)) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
             ServletContext context = getServletContext();
             RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/activities/activity/activity.jsp");

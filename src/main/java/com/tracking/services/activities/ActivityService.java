@@ -10,6 +10,7 @@ import com.tracking.models.Activity;
 import com.tracking.models.Category;
 import com.tracking.models.User;
 import com.tracking.models.UserActivity;
+import com.tracking.services.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,7 +23,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class ActivityService {
+public class ActivityService extends Service {
 
     public boolean add(HttpSession session, Activity activity) throws SQLException {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
@@ -149,68 +150,7 @@ public class ActivityService {
         return creatorInfo;
     }
 
-    public String setImageName(Part part) {
-        String filename = part.getSubmittedFileName();
-        if (filename == null || filename.isEmpty())
-            return null;
-        String[] splittedFilename = filename.split("\\.");
-        String ext = splittedFilename[splittedFilename.length - 1];
-        return new Date().getTime() + "." + ext;
-    }
-
-    public void saveImage(Part part, String filename, String realPath) throws IOException {
-        if (filename == null || filename.isEmpty())
-            return;
-        String uploadPath = realPath + FilePaths.ACTIVITY_IMG_UPLOAD_DIRECTORY;
-        File uploadDir = new File(uploadPath);
-        if (!uploadDir.exists())
-            uploadDir.mkdirs();
-        try {
-            part.write(uploadPath + filename);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new IOException();
-        }
-    }
-
-    public void updateImage(Part part, String filename, String oldImage, String realPath) throws IOException {
-        if (filename == null || filename.isEmpty())
-            return;
-        if (oldImage == null || oldImage.isEmpty()) {
-            String uploadPath = realPath + FilePaths.ACTIVITY_IMG_UPLOAD_DIRECTORY;
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists())
-                uploadDir.mkdirs();
-            try {
-                part.write(uploadPath + filename);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new IOException();
-            }
-        } else {
-            String oldImagePath = realPath + FilePaths.ACTIVITY_IMG_UPLOAD_DIRECTORY + oldImage;
-            File oldImageDir = new File(oldImagePath);
-            oldImageDir.delete();
-
-            String newImagePath = realPath + FilePaths.ACTIVITY_IMG_UPLOAD_DIRECTORY + filename;
-            try {
-                part.write(newImagePath);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new IOException();
-            }
-        }
-    }
-
-    public void deleteImage(String image, String realPath) {
-        if (image == null || image.isEmpty())
-            return;
-        String oldImagePath = realPath + FilePaths.ACTIVITY_IMG_UPLOAD_DIRECTORY + image;
-        File oldImageDir = new File(oldImagePath);
-        oldImageDir.delete();
-    }
-
-    public void getProcess(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
+    public boolean processActivity(HttpServletRequest req) throws SQLException {
         try {
             int activityId = Integer.parseInt(req.getParameter("id"));
             Activity activity = get(activityId);
@@ -223,10 +163,8 @@ public class ActivityService {
                     : userActivityCount / total + 1;
             if (req.getParameter("page") != null) {
                 page = Integer.parseInt(req.getParameter("page"));
-                if (page <= 0 || page > pageCount) {
-                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    return;
-                }
+                if (page <= 0 || page > pageCount)
+                    return false;
                 start = start + total * (page - 1);
             }
             int previousPage = 0;
@@ -256,12 +194,7 @@ public class ActivityService {
             e.printStackTrace();
             throw new SQLException();
         }
-    }
-
-    private int getPageCount(int itemCount, int total) {
-        int pageCount = itemCount % total == 0 ? itemCount / total
-                : itemCount / total + 1;
-        return pageCount;
+        return true;
     }
 
     public void addUser(int activityId, int userId) throws SQLException {

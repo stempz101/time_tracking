@@ -6,6 +6,7 @@ import com.tracking.dao.DAOFactory;
 import com.tracking.lang.Language;
 import com.tracking.models.Activity;
 import com.tracking.models.Category;
+import com.tracking.services.Service;
 import com.tracking.services.categories.CategoriesService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +15,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
-public class ActivitiesService {
+public class ActivitiesService extends Service {
     public int getMaxPeopleCount() throws SQLException {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
         ActivityDAO activityDAO = factory.getActivityDao();
@@ -206,6 +207,7 @@ public class ActivitiesService {
             categoryList.add(new Category(0, "Other", "Інше"));
             if (req.getParameter("search") != null) {
                 String searchQuery = req.getParameter("search");
+                req.setAttribute("searchQuery", searchQuery);
                 if (req.getParameterValues("filter") != null) {
                     System.out.println("req.getParameterValues(\"filter\") != null");
                     filteredList = Arrays.stream(req.getParameterValues("filter"))
@@ -257,26 +259,5 @@ public class ActivitiesService {
             e.printStackTrace();
             throw new SQLException();
         }
-    }
-
-    public void setQueryStringForPagination(HttpServletRequest req) {
-        Enumeration<String> params = req.getParameterNames();
-        StringBuilder query = new StringBuilder();
-        while (params.hasMoreElements()) {
-            String paramName = params.nextElement();
-            if (paramName.equals("page"))
-                continue;
-            String[] paramValues = req.getParameterValues(paramName);
-            for (String paramValue : paramValues) {
-                query.append(paramName)
-                        .append("=")
-                        .append(paramValue)
-                        .append("&");
-            }
-        }
-        if (query.length() > 0)
-            query.delete(query.length() - 1, query.length());
-        System.out.println(query);
-        req.setAttribute("queryForPagination", req.getContextPath() + "?" + query);
     }
 }

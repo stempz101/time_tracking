@@ -2,6 +2,7 @@ package com.tracking.controllers.servlets.admin.users;
 
 import com.tracking.dao.DAOFactory;
 import com.tracking.dao.UserDAO;
+import com.tracking.services.users.UsersService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +15,14 @@ import java.sql.SQLException;
 
 @WebServlet("/a/user-set-block")
 public class SetBlockServlet extends HttpServlet {
+
+    UsersService usersService = null;
+
+    @Override
+    public void init() throws ServletException {
+        usersService = new UsersService();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doPost(req, resp);
@@ -28,13 +37,11 @@ public class SetBlockServlet extends HttpServlet {
 
         try {
             HttpSession session = req.getSession();
-            if (isBlocked) {
-                userDAO.setBlock(userId, true);
+            usersService.setBlock(userId, isBlocked);
+            if (isBlocked)
                 session.setAttribute("successMessage", "");
-            } else {
-                userDAO.setBlock(userId, false);
+            else
                 session.setAttribute("successMessage", "");
-            }
             resp.sendRedirect(req.getContextPath() + "/a/users");
         } catch (SQLException e) {
             e.printStackTrace();

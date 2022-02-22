@@ -30,7 +30,10 @@ public class CategoriesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            categoriesService.processCategories(req, resp);
+            if (!categoriesService.processCategories(req)) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
             ServletContext context = getServletContext();
             RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/categories/categories.jsp");
