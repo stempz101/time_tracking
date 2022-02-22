@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Context>
+    <Resource
+            name="jdbc/time_tracking"
+            auth="Container"
+            description="DB Connection"
+            type="javax.sql.DataSource"
+            username="root"
+            password="root"
+            driverClassName="com.mysql.cj.jdbc.Driver"
+            url="jdbc:mysql://localhost:3306/time_tracking?autoReconnect=true"
+            validationQuery="select 1"
+            maxActive="10"
+            maxIdle="4"
+            maxWait="10000" />
+</Context>
