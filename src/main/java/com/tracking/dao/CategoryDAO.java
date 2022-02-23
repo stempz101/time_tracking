@@ -16,6 +16,12 @@ public interface CategoryDAO {
 
     List<Category> getAll(Language language, int start, int total) throws SQLException;
 
+    List<Category> getAllOrder(Language language, String sort, String order, int start, int total) throws SQLException;
+
+    List<Category> getAllWhereName(String name, Language language, int start, int total) throws SQLException;
+
+    List<Category> getAllWhereNameOrder(String name, Language language, String sort, String order, int start, int total) throws SQLException;
+
     List<Category> getAllForActivities(Language language) throws SQLException;
 
     List<Category> getAllById(List<Integer> categoryIds, Language language) throws SQLException;
@@ -24,9 +30,9 @@ public interface CategoryDAO {
 
     Category getByName(String name, Language language);
 
-    Category getCategory(PreparedStatement prst) throws SQLException;
-
     int getCount() throws SQLException;
+
+    int getCountWhereName(String name, Language language) throws SQLException;
 
     boolean update(HttpSession session, String nameEN, String nameUA) throws SQLException;
 

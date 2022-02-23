@@ -215,6 +215,8 @@ public abstract class MysqlConstants {
     public static final String SELECT_ALL_CATEGORIES_UA = "SELECT * FROM categories ORDER BY name_ua";
     public static final String SELECT_ALL_CATEGORIES_EN_LIMIT = "SELECT * FROM categories ORDER BY name_en LIMIT ?, ?";
     public static final String SELECT_ALL_CATEGORIES_UA_LIMIT = "SELECT * FROM categories ORDER BY name_ua LIMIT ?, ?";
+    public static final String SELECT_ALL_CATEGORIES_EN_ORDER_LIMIT = "SELECT * FROM categories ORDER BY " + ORDER_BY + " LIMIT ?, ?";
+    public static final String SELECT_ALL_CATEGORIES_UA_ORDER_LIMIT = "SELECT * FROM categories ORDER BY " + ORDER_BY + " LIMIT ?, ?";
     public static final String SELECT_ALL_CATEGORIES_BY_ID_EN = "SELECT * FROM categories WHERE id IN (" + IN + ") ORDER BY name_en";
     public static final String SELECT_ALL_CATEGORIES_BY_ID_UA = "SELECT * FROM categories WHERE id IN (" + IN + ") ORDER BY name_ua";
     public static final String SELECT_CATEGORY = "SELECT * FROM categories WHERE id = ?";
@@ -222,7 +224,13 @@ public abstract class MysqlConstants {
     public static final String SELECT_CATEGORY_BY_NAME_UA = "SELECT * FROM categories WHERE name_ua = ?";
     public static final String SELECT_CATEGORY_BY_NAME_EN_OTHER = "SELECT * FROM categories WHERE name_en = ? AND id <> ?";
     public static final String SELECT_CATEGORY_BY_NAME_UA_OTHER = "SELECT * FROM categories WHERE name_ua = ? AND id <> ?";
+    public static final String SELECT_CATEGORIES_LIKE_EN_LIMIT = "SELECT * FROM categories WHERE name_en LIKE ? ORDER BY name_en LIMIT ?, ?";
+    public static final String SELECT_CATEGORIES_LIKE_UA_LIMIT  = "SELECT * FROM categories WHERE name_ua LIKE ? ORDER BY name_ua LIMIT ?, ?";
+    public static final String SELECT_CATEGORIES_LIKE_EN_ORDER_LIMIT  = "SELECT * FROM categories WHERE name_en LIKE ? ORDER BY " + ORDER_BY + " LIMIT ?, ?";
+    public static final String SELECT_CATEGORIES_LIKE_UA_ORDER_LIMIT  = "SELECT * FROM categories WHERE name_ua LIKE ? ORDER BY " + ORDER_BY + " LIMIT ?, ?";
     public static final String GET_CATEGORIES_COUNT = "SELECT COUNT(*) count FROM categories";
+    public static final String GET_CATEGORIES_LIKE_EN_COUNT = "SELECT COUNT(*) count FROM categories WHERE name_en LIKE ? ORDER BY name_en";
+    public static final String GET_CATEGORIES_LIKE_UA_COUNT = "SELECT COUNT(*) count FROM categories WHERE name_ua LIKE ? ORDER BY name_ua";
     public static final String UPDATE_CATEGORY = "UPDATE categories SET name_en = ?, name_ua = ? WHERE id = ?";
     public static final String DELETE_CATEGORY = "DELETE FROM categories WHERE id = ?";
 }

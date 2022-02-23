@@ -34,6 +34,8 @@ public class CategoriesServlet extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
+            if (req.getQueryString() != null)
+                categoriesService.setQueryStringForPagination(req);
 
             ServletContext context = getServletContext();
             RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/categories/categories.jsp");

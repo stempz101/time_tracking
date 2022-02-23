@@ -2,6 +2,7 @@ package com.tracking.dao.mysql;
 
 import com.tracking.dao.CategoryDAO;
 import com.tracking.dao.DAOFactory;
+import com.tracking.dao.mapper.EntityMapper;
 import com.tracking.models.Category;
 import com.tracking.lang.Language;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.tracking.dao.mysql.MysqlConstants.*;
+import static com.tracking.dao.mysql.MysqlConstants.SELECT_ALL_CATEGORIES_UA_ORDER_LIMIT;
 
 public class MysqlCategoryDAO implements CategoryDAO {
 
@@ -62,11 +64,10 @@ public class MysqlCategoryDAO implements CategoryDAO {
 
     @Override
     public List<Category> getAll(Language language, int start, int total) throws SQLException {
-        List<Category> categoryList;
         Connection con = null;
         PreparedStatement prst = null;
         try {
-            categoryList = new ArrayList<>();
+            List<Category> categoryList = new ArrayList<>();
             con = factory.getConnection();
             if (language.equals(Language.EN))
                 prst = con.prepareStatement(SELECT_ALL_CATEGORIES_EN_LIMIT);
@@ -75,15 +76,17 @@ public class MysqlCategoryDAO implements CategoryDAO {
             int c = 0;
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
+            CategoryMapper mapper = new CategoryMapper();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    Category category = new Category();
+                    Category category = mapper.mapRow(rs);
                     category.setId(rs.getInt(COL_ID));
                     category.setNameEN(rs.getString(COL_NAME_EN));
                     category.setNameUA(rs.getString(COL_NAME_UA));
                     categoryList.add(category);
                 }
             }
+            return categoryList;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException();
@@ -91,39 +94,132 @@ public class MysqlCategoryDAO implements CategoryDAO {
             factory.closeResource(prst);
             factory.closeResource(con);
         }
-        return categoryList;
+    }
+
+    @Override
+    public List<Category> getAllOrder(Language language, String sort, String order, int start, int total) throws SQLException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            List<Category> categoryList = new ArrayList<>();
+            String orderBy = sort + " " + order;
+            con = factory.getConnection();
+            if (language.equals(Language.EN))
+                prst = con.prepareStatement(SELECT_ALL_CATEGORIES_EN_ORDER_LIMIT.replace(ORDER_BY, orderBy));
+            else if (language.equals(Language.UA))
+                prst = con.prepareStatement(SELECT_ALL_CATEGORIES_UA_ORDER_LIMIT.replace(ORDER_BY, orderBy));
+            int c = 0;
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            CategoryMapper mapper = new CategoryMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Category category = mapper.mapRow(rs);
+                    categoryList.add(category);
+                }
+            }
+            return categoryList;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
+        }
+    }
+
+    @Override
+    public List<Category> getAllWhereName(String name, Language language, int start, int total) throws SQLException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            List<Category> categoryList = new ArrayList<>();
+            con = factory.getConnection();
+            if (language.equals(Language.EN))
+                prst = con.prepareStatement(SELECT_CATEGORIES_LIKE_EN_LIMIT);
+            else if (language.equals(Language.UA))
+                prst = con.prepareStatement(SELECT_CATEGORIES_LIKE_UA_LIMIT);
+            int c = 0;
+            prst.setString(++c, name + "%");
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            CategoryMapper mapper = new CategoryMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Category category = mapper.mapRow(rs);
+                    categoryList.add(category);
+                }
+            }
+            return categoryList;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
+        }
+    }
+
+    @Override
+    public List<Category> getAllWhereNameOrder(String name, Language language, String sort, String order, int start, int total) throws SQLException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            List<Category> categoryList = new ArrayList<>();
+            String orderBy = sort + " " + order;
+            con = factory.getConnection();
+            if (language.equals(Language.EN))
+                prst = con.prepareStatement(SELECT_CATEGORIES_LIKE_EN_ORDER_LIMIT.replace(ORDER_BY, orderBy));
+            else if (language.equals(Language.UA))
+                prst = con.prepareStatement(SELECT_CATEGORIES_LIKE_UA_ORDER_LIMIT.replace(ORDER_BY, orderBy));
+            int c = 0;
+            prst.setString(++c, name + "%");
+            prst.setInt(++c, start - 1);
+            prst.setInt(++c, total);
+            CategoryMapper mapper = new CategoryMapper();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    Category category = mapper.mapRow(rs);
+                    categoryList.add(category);
+                }
+            }
+            return categoryList;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
+        }
     }
 
     @Override
     public List<Category> getAllForActivities(Language language) throws SQLException {
-        List<Category> categoryList;
         try (Connection con = factory.getConnection();
              Statement stmt = con.createStatement()) {
-            categoryList = new ArrayList<>();
+            List<Category> categoryList = new ArrayList<>();
             ResultSet rs = null;
             if (language.equals(Language.EN))
                 rs = stmt.executeQuery(SELECT_ALL_CATEGORIES_EN);
             else if (language.equals(Language.UA))
                 rs = stmt.executeQuery(SELECT_ALL_CATEGORIES_UA);
+            CategoryMapper mapper = new CategoryMapper();
             while (rs.next()) {
-                Category category = new Category();
-                category.setId(rs.getInt(COL_ID));
-                category.setNameEN(rs.getString(COL_NAME_EN));
-                category.setNameUA(rs.getString(COL_NAME_UA));
+                Category category = mapper.mapRow(rs);
                 categoryList.add(category);
             }
+            return categoryList;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException();
         }
-        return categoryList;
     }
 
     @Override
     public List<Category> getAllById(List<Integer> categoryIds, Language language) throws SQLException {
-        List<Category> categoryList = null;
         try (Connection con = factory.getConnection()) {
             PreparedStatement prst = null;
+            List<Category> categoryList = null;
             if (categoryIds != null && !categoryIds.isEmpty()) {
                 categoryList = new ArrayList<>();
                 if (language.equals(Language.EN))
@@ -133,21 +229,19 @@ public class MysqlCategoryDAO implements CategoryDAO {
                 int c = 0;
                 for (int categoryId : categoryIds)
                     prst.setInt(++c, categoryId);
+                CategoryMapper mapper = new CategoryMapper();
                 try (ResultSet rs = prst.executeQuery()) {
                     while (rs.next()) {
-                        Category category = new Category();
-                        category.setId(rs.getInt(COL_ID));
-                        category.setNameEN(rs.getString(COL_NAME_EN));
-                        category.setNameUA(rs.getString(COL_NAME_UA));
+                        Category category = mapper.mapRow(rs);
                         categoryList.add(category);
                     }
                 }
             }
+            return categoryList;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException();
         }
-        return categoryList;
     }
 
     @Override
@@ -155,13 +249,17 @@ public class MysqlCategoryDAO implements CategoryDAO {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(SELECT_CATEGORY)) {
             prst.setInt(1, id);
-            Category category = getCategory(prst);
-            if (category != null) return category;
+            CategoryMapper mapper = new CategoryMapper();
+            Category category = null;
+            try (ResultSet rs = prst.executeQuery()) {
+                if (rs.next())
+                    category = mapper.mapRow(rs);
+                return category;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException();
         }
-        return null;
     }
 
     @Override
@@ -175,8 +273,13 @@ public class MysqlCategoryDAO implements CategoryDAO {
             else if (language.equals(Language.UA))
                 prst = con.prepareStatement(SELECT_CATEGORY_BY_NAME_UA);
             prst.setString(1, name);
-            Category category = getCategory(prst);
-            if (category != null) return category;
+            CategoryMapper mapper = new CategoryMapper();
+            Category category = null;
+            try (ResultSet rs = prst.executeQuery()) {
+                if (rs.next())
+                    category = mapper.mapRow(rs);
+                return category;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -198,27 +301,18 @@ public class MysqlCategoryDAO implements CategoryDAO {
             int c = 0;
             prst.setString(++c, name);
             prst.setInt(++c, id);
-            Category category = getCategory(prst);
-            if (category != null) return category;
+            CategoryMapper mapper = new CategoryMapper();
+            Category category = null;
+            try (ResultSet rs = prst.executeQuery()) {
+                if (rs.next())
+                    category = mapper.mapRow(rs);
+                return category;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             factory.closeResource(prst);
             factory.closeResource(con);
-        }
-        return null;
-    }
-
-    @Override
-    public Category getCategory(PreparedStatement prst) throws SQLException {
-        try (ResultSet rs = prst.executeQuery()) {
-            if (rs.next()) {
-                Category category = new Category();
-                category.setId(rs.getInt(COL_ID));
-                category.setNameEN(rs.getString(COL_NAME_EN));
-                category.setNameUA(rs.getString(COL_NAME_UA));
-                return category;
-            }
         }
         return null;
     }
@@ -235,6 +329,32 @@ public class MysqlCategoryDAO implements CategoryDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException();
+        }
+    }
+
+    @Override
+    public int getCountWhereName(String name, Language language) throws SQLException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            con = factory.getConnection();
+            if (language.equals(Language.EN))
+                prst = con.prepareStatement(GET_CATEGORIES_LIKE_EN_COUNT);
+            else if (language.equals(Language.UA))
+                prst = con.prepareStatement(GET_CATEGORIES_LIKE_UA_COUNT);
+            prst.setString(1, name + "%");
+            try (ResultSet rs = prst.executeQuery()) {
+                int count = 0;
+                if (rs.next())
+                    count = rs.getInt(COL_COUNT);
+                return count;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
         }
     }
 
@@ -297,5 +417,20 @@ public class MysqlCategoryDAO implements CategoryDAO {
             return true;
         }
         return false;
+    }
+
+    private static class CategoryMapper implements EntityMapper<Category> {
+        @Override
+        public Category mapRow(ResultSet rs) {
+            try {
+                Category category = new Category();
+                category.setId(rs.getInt(COL_ID));
+                category.setNameEN(rs.getString(COL_NAME_EN));
+                category.setNameUA(rs.getString(COL_NAME_UA));
+                return category;
+            } catch (SQLException e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 }

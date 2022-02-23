@@ -21,9 +21,6 @@
                 </svg>
             </a>
 
-            <%--            {{--            <form class="col-12 col-lg-auto ms-3 me-lg-auto mb-2 justify-content-center mb-md-0 w-50">--}}--%>
-            <%--            {{--                <input type="search" class="form-control" placeholder="Search..." aria-label="Search">--}}--%>
-            <%--            {{--            </form>--}}--%>
             <div class="me-lg-auto"></div>
             <ul class="nav col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
                 <li>
@@ -73,14 +70,111 @@
 </header>
 
 <section class="container">
+    <div class="row text-center">
+        <h1>Categories</h1>
+    </div>
+    <c:if test="${sessionScope.successMessage != null}">
+        <div class="row mt-2">
+            <div class="alert alert-success py-1">${sessionScope.successMessage}</div>
+        </div>
+    </c:if>
     <div class="row">
-        <div class="col-12 text-center"><h3>Categories</h3></div>
-        <c:if test="${sessionScope.successMessage != null}">
-            <div class="col-12 mt-2">
-                <div class="alert alert-success py-1">${sessionScope.successMessage}</div>
+        <div class="d-inline-flex justify-content-between">
+            <div class="d-flex">
+                <form action="<%= request.getContextPath() + "/a/categories" %>"
+                      class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
+                      method="get">
+                    <select class="form-select w-25" aria-label="Lang" name="lang" id="lang">
+                        <c:choose>
+                            <c:when test="${param.lang.equals('en')}">
+                                <option value="en" selected>EN</option>
+                            </c:when>
+                            <c:otherwise>
+                                <option value="en">EN</option>
+                            </c:otherwise>
+                        </c:choose>
+                        <c:choose>
+                            <c:when test="${param.lang.equals('ua')}">
+                                <option value="ua" selected>UA</option>
+                            </c:when>
+                            <c:otherwise>
+                                <option value="ua">UA</option>
+                            </c:otherwise>
+                        </c:choose>
+                    </select>
+                    <input type="search" name="name" class="form-control ms-2" placeholder="Category"
+                           aria-label="Category" value="${param.name}">
+                    <button type="submit" class="btn btn-primary ms-2">Search</button>
+                </form>
             </div>
-        </c:if>
-        <div class="">
+            <div class="d-flex align-items-center">
+                <form action="<%=request.getContextPath() + "/a/categories"%>" method="get">
+                    <c:if test="${param.lang != null && not empty param.lang}">
+                        <input type="hidden" name="lang" value="${param.lang}">
+                    </c:if>
+                    <c:if test="${param.name != null && not empty param.name}">
+                        <input type="hidden" name="name" value="${param.name}">
+                    </c:if>
+                    <div class="d-flex">
+                        <select class="form-select" aria-label="Sort by" name="sort" id="sort">
+                            <option value="">Sort by</option>
+                            <c:choose>
+                                <c:when test="${param.sort.equals('id')}">
+                                    <option value="id" selected>id</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="id">id</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sort.equals('name_en')}">
+                                    <option value="name_en" selected>name (EN)</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="name_en">name (EN)</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.sort.equals('name_ua')}">
+                                    <option value="name_ua" selected>name (UA)</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="name_ua">name (UA)</option>
+                                </c:otherwise>
+                            </c:choose>
+                        </select>
+                        <select class="form-select ms-2" aria-label="Order by" name="order" id="orderBy"
+                                required>
+                            <c:choose>
+                                <c:when test="${param.order.equals('asc') ||
+                                                param.order == null ||
+                                                empty param.order}">
+                                    <option value="asc" selected>ascending</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="asc">ascending</option>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:choose>
+                                <c:when test="${param.order.equals('desc')}">
+                                    <option value="desc" selected>descending</option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="desc">descending</option>
+                                </c:otherwise>
+                            </c:choose>
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="width: 100px; margin-left: 11px;"
+                                value="1">
+                            Sort
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div>
             <table class="table text-center align-middle table-bordered table-striped mt-2">
                 <thead>
                 <tr>
@@ -91,21 +185,21 @@
                 </tr>
                 </thead>
                 <tbody>
-                    <c:forEach var="category" items="${requestScope.categoryList}">
-                        <tr>
-                            <td><c:out value="${category.id}" /></td>
-                            <td><c:out value="${category.nameEN}" /></td>
-                            <td><c:out value="${category.nameUA}" /></td>
-                            <td>
-                                <div>
-                                    <c:if test="${category.id > 1}">
-                                        <a href="<%= request.getContextPath() + "/a/edit-cat" %>?id=${category.id}" class="btn btn-primary">Edit</a>
-                                        <a href="<%= request.getContextPath() + "/a/delete-cat" %>?id=${category.id}" class="btn btn-danger">Delete</a>
-                                    </c:if>
-                                </div>
-                            </td>
-                        </tr>
-                    </c:forEach>
+                <c:forEach var="category" items="${requestScope.categoryList}">
+                    <tr>
+                        <td><c:out value="${category.id}" /></td>
+                        <td><c:out value="${category.nameEN}" /></td>
+                        <td><c:out value="${category.nameUA}" /></td>
+                        <td>
+                            <div>
+                                <c:if test="${category.id > 1}">
+                                    <a href="<%= request.getContextPath() + "/a/edit-cat" %>?id=${category.id}" class="btn btn-primary">Edit</a>
+                                    <a href="<%= request.getContextPath() + "/a/delete-cat" %>?id=${category.id}" class="btn btn-danger">Delete</a>
+                                </c:if>
+                            </div>
+                        </td>
+                    </tr>
+                </c:forEach>
                 </tbody>
             </table>
         </div>
@@ -124,10 +218,19 @@
                                 </li>
                             </c:when>
                             <c:otherwise>
-                                <a class="page-link"
-                                   href="<%=request.getContextPath() + "/a/categories"%>?page=${requestScope.previousPage}">
-                                    Previous
-                                </a>
+                                <c:choose>
+                                    <c:when test="${pageContext.request.queryString != null}">
+                                        <a class="page-link"
+                                           href="${requestScope.queryForPagination}&page=${requestScope.previousPage}">
+                                            Previous
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a class="page-link" href="?page=${requestScope.previousPage}">
+                                            Previous
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:otherwise>
                         </c:choose>
                             <%--                        Page Buttons --%>
@@ -140,10 +243,15 @@
                                 </c:when>
                                 <c:otherwise>
                                     <li class="page-item">
-                                        <a class="page-link"
-                                           href="<%=request.getContextPath() + "/a/categories"%>?page=${i}">
-                                                ${i}
-                                        </a>
+                                        <c:choose>
+                                            <c:when test="${pageContext.request.queryString != null}">
+                                                <a class="page-link"
+                                                   href="${requestScope.queryForPagination}&page=${i}">${i}</a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a class="page-link" href="?page=${i}">${i}</a>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </li>
                                 </c:otherwise>
                             </c:choose>
@@ -156,8 +264,15 @@
                                 </li>
                             </c:when>
                             <c:otherwise>
-                                <a class="page-link"
-                                   href="<%=request.getContextPath() + "/a/categories"%>?page=${requestScope.nextPage}">Next</a>
+                                <c:choose>
+                                    <c:when test="${pageContext.request.queryString != null}">
+                                        <a class="page-link"
+                                           href="${requestScope.queryForPagination}&page=${requestScope.nextPage}">Next</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a class="page-link" href="?page=${requestScope.nextPage}">Next</a>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:otherwise>
                         </c:choose>
                     </ul>

@@ -399,7 +399,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     public List<Activity> getAllLikeAndWhereCategoryIsNullOrder(String searchQuery, String sort, String order,
                                                                 int peopleFrom, int peopleTo, int start, int total) throws SQLException {
         List<Activity> activityList;
-        String orderBy = sort + " " + order;;
+        String orderBy = sort + " " + order;
         if (sort.equals("create_time") || sort.equals("people_count"))
             orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
