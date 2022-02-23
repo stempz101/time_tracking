@@ -79,9 +79,6 @@
         <h1>Users</h1>
     </div>
     <div class="row">
-        <h4>Search:</h4>
-    </div>
-    <div class="row">
         <div class="d-inline-flex justify-content-between">
             <div class="d-flex">
                 <form action="<%= request.getContextPath() + "/a/users" %>"
@@ -94,8 +91,10 @@
                     <button type="submit" class="btn btn-primary ms-2">Search</button>
                 </form>
             </div>
-            <div class="d-flex align-items-center">
-                <form action="<%=request.getContextPath() + "/a/users"%>" method="get">
+            <div class="d-flex">
+                <form action="<%=request.getContextPath() + "/a/users"%>"
+                      class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
+                      method="get">
                     <c:if test="${param.lastName != null && not empty param.lastName}">
                         <input type="hidden" name="lastName" value="${param.lastName}">
                     </c:if>
@@ -103,7 +102,8 @@
                         <input type="hidden" name="firstName" value="${param.firstName}">
                     </c:if>
                     <div class="d-flex">
-                        <select class="form-select" aria-label="Sort by" name="sortBy" id="sort">
+                        <a href="<%= request.getContextPath() + "/a/users" %>" class="btn btn-primary">Reset</a>
+                        <select class="form-select ms-2" aria-label="Sort by" name="sortBy" id="sort">
                             <option value="">Sort by</option>
                             <c:choose>
                                 <c:when test="${param.sortBy.equals('id')}">

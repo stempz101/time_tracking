@@ -119,6 +119,33 @@
         <div class="row px-4">
             <h4>Description:</h4>
             <p>${requestScope.activity.description}</p>
+            <div class="d-flex align-items-center mb-2">
+                <h4>Category: </h4>
+                <p class="mb-2 ms-2" style="font-size: 1.2rem">
+                    <c:choose>
+                        <c:when test="${requestScope.categories != null || not empty requestScope.categories}">
+                            <c:set var="i" value="0" scope="page" />
+                            <c:forEach var="category" items="${requestScope.categories}">
+                                <c:set var="i" value="${i + 1}" scope="page" />
+                                ${category.nameEN}<c:if test="${i != requestScope.categories.size()}">, </c:if>   <%-- localize --%>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="category" items="${requestScope.categories}">
+                                <c:if test="${category.id == 0}">
+                                    ${category.nameEN}                    <%-- localize --%>
+                                </c:if>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
+                </p>
+            </div>
+            <div class="d-flex align-items-center">
+                <h4>Creator: </h4>
+                <a href="#" class="mb-2 ms-2 text-decoration-none text-dark" style="font-size: 1.2rem">
+                   ${requestScope.creator.lastName} ${requestScope.creator.firstName}
+                </a>
+            </div>
         </div>
         <hr class="mt-1">
         <c:if test="${requestScope.userActivity != null}">
@@ -185,13 +212,6 @@
             <hr class="mt-1">
         </c:if>
         <div class="row px-4">
-            <h4>Creator: </h4>
-            <a href="#">
-                <p style="font-size: 1.2rem">${requestScope.creator.lastName} ${requestScope.creator.firstName}</p>
-            </a>
-        </div>
-        <hr class="mt-1">
-        <div class="row px-4">
             <h4>Available users: </h4>
             <form action="<%=request.getContextPath() + "/a/activity-add-user"%>?activity=${requestScope.activity.id}"
                   method="POST">
@@ -221,6 +241,110 @@
                 <hr class="mt-1">
                 <div class="row px-4">
                     <h4>Participants: </h4>
+                </div>
+                <div class="row px-4">
+                    <div class="d-inline-flex justify-content-between">
+                        <div class="d-flex">
+                            <form action="<%= request.getContextPath() + "/a/activity" %>"
+                                  class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
+                                  method="get">
+                                <input type="hidden" name="id" value="${requestScope.activity.id}">
+                                <input type="search" name="lastName" class="form-control w-50" placeholder="Smith"
+                                       aria-label="Last Name" value="${param.lastName}">
+                                <input type="search" name="firstName" class="form-control w-50 ms-2" placeholder="John"
+                                       aria-label="First Name" value="${param.firstName}">
+                                <button type="submit" class="btn btn-primary ms-2">Search</button>
+                            </form>
+                        </div>
+                        <div class="d-flex">
+                            <form action="<%=request.getContextPath() + "/a/activity"%>"
+                                  class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
+                                  method="get">
+                                <input type="hidden" name="id" value="${requestScope.activity.id}">
+                                <c:if test="${param.lastName != null && not empty param.lastName}">
+                                    <input type="hidden" name="lastName" value="${param.lastName}">
+                                </c:if>
+                                <c:if test="${param.firstName != null && not empty param.firstName}">
+                                    <input type="hidden" name="firstName" value="${param.firstName}">
+                                </c:if>
+                                <div class="d-flex">
+                                    <a href="<%= request.getContextPath() + "/a/activity" %>?id=${requestScope.activity.id}"
+                                       class="btn btn-primary">Reset</a>
+                                    <select class="form-select ms-2" aria-label="Sort by" name="sort" id="sort">
+                                        <option value="">Sort by</option>
+                                        <c:choose>
+                                            <c:when test="${param.sort.equals('id')}">
+                                                <option value="id" selected>id</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="id">id</option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:choose>
+                                            <c:when test="${param.sort.equals('last_name')}">
+                                                <option value="last_name" selected>name</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="last_name">name</option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:choose>
+                                            <c:when test="${param.sort.equals('activity_count')}">
+                                                <option value="activity_count" selected>activities</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="activity_count">activities</option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:choose>
+                                            <c:when test="${param.sort.equals('spent_time')}">
+                                                <option value="spent_time" selected>time</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="spent_time">time</option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:choose>
+                                            <c:when test="${param.sort.equals('is_admin')}">
+                                                <option value="is_admin" selected>role</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="is_admin">role</option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </select>
+                                    <select class="form-select ms-2" aria-label="Order by" name="order" id="orderBy"
+                                            required>
+                                        <c:choose>
+                                            <c:when test="${param.order.equals('asc') ||
+                                                param.order == null ||
+                                                empty param.order}">
+                                                <option value="asc" selected>ascending</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="asc">ascending</option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:choose>
+                                            <c:when test="${param.order.equals('desc')}">
+                                                <option value="desc" selected>descending</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="desc">descending</option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary"
+                                            style="width: 100px; margin-left: 11px;"
+                                            value="1">
+                                        Sort
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="row px-4">
                     <table class="table text-center align-middle table-bordered table-striped mt-2">
                         <thead>
                         <tr>

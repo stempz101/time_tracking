@@ -24,6 +24,13 @@ public interface UserDAO {
 
     List<UserActivity> getAllWhereInActivity(int activityId, int start, int total) throws SQLException;
 
+    List<UserActivity> getAllInActivityOrder(int activityId, String sort, String order, int start, int total) throws SQLException;
+
+    List<UserActivity> getAllInActivityWhereName(int activityId, String lastName, String firstName, int start, int total) throws SQLException;
+
+    List<UserActivity> getAllInActivityWhereNameOrder(int activityId, String lastName, String firstName,
+                                                      String sort, String order, int start, int total) throws SQLException;
+
     List<User> getAllWhereNotInActivity(int activityId) throws SQLException;
 
     UserActivity getWhereInActivity(User user, int activityId) throws SQLException;
@@ -44,6 +51,8 @@ public interface UserDAO {
     int getCount() throws SQLException;
 
     int getCountWhereName(String lastName, String firstName) throws SQLException;
+
+    int getCountInActivityWhereName(int activityId, String lastName, String firstName) throws SQLException;
 
     void setAdmin(int userId, boolean isAdmin) throws SQLException;
 

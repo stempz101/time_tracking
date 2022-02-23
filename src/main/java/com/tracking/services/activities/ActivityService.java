@@ -19,6 +19,7 @@ import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -89,11 +90,16 @@ public class ActivityService extends Service {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
         CategoryDAO categoryDAO = factory.getCategoryDao();
         List<Category> categories = null;
-        try {
-            categories = categoryDAO.getAllById(categoryIds, language); // localize
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            categories = new ArrayList<>();
+            categories.add(new Category(0, "Other", "Інше"));
+        } else {
+            try {
+                categories = categoryDAO.getAllById(categoryIds, language); // localize
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new SQLException();
+            }
         }
         return categories;
     }
@@ -152,19 +158,56 @@ public class ActivityService extends Service {
 
     public boolean processActivity(HttpServletRequest req) throws SQLException {
         try {
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            UserDAO userDAO = factory.getUserDao();
             int activityId = Integer.parseInt(req.getParameter("id"));
-            Activity activity = get(activityId);
 
-            int userActivityCount = activity.getPeopleCount();
+            HttpSession session = req.getSession();
+
+            Activity activity = get(activityId);
+            List<Category> categories = getActivityCategories(activity.getCategories(), Language.EN); // localize
+            UserActivity userActivity = getCreatorInfo((User) session.getAttribute("authUser"), activityId);
+            List<User> usersNotInActivity = getAvailableUsers(activityId);
+            User creator = getCreator(activityId);
+
+            List<UserActivity> userList;
+
             int start = 1;
             int page = 1;
-            int pageCount = getPageCount(userActivityCount, TOTAL_USERS_ACTIVITY);
             if (req.getParameter("page") != null) {
                 page = Integer.parseInt(req.getParameter("page"));
-                if (page <= 0 || page > pageCount)
+                if (page <= 0)
                     return false;
                 start = start + TOTAL_USERS_ACTIVITY * (page - 1);
             }
+
+            int userActivityCount = activity.getPeopleCount();
+            if (req.getParameter("lastName") != null || req.getParameter("firstName") != null) {
+                String lastName = req.getParameter("lastName");
+                String firstName = req.getParameter("firstName");
+                req.setAttribute("lastName", lastName);
+                req.setAttribute("firstName", firstName);
+                userActivityCount = userDAO.getCountInActivityWhereName(activityId, lastName, firstName);
+                if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                    String sort = req.getParameter("sort");
+                    String order = req.getParameter("order");
+                    if (order == null || order.isEmpty())
+                        order = "asc";
+                    userList = userDAO.getAllInActivityWhereNameOrder(activityId, lastName, firstName, sort, order, start, TOTAL_USERS_ACTIVITY);
+                } else {
+                    userList = userDAO.getAllInActivityWhereName(activityId, lastName, firstName, start, TOTAL_USERS_ACTIVITY);
+                }
+            } else if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
+                String sort = req.getParameter("sort");
+                String order = req.getParameter("order");
+                if (order == null || order.isEmpty())
+                    order = "asc";
+                userList = userDAO.getAllInActivityOrder(activityId, sort, order, start, TOTAL_USERS_ACTIVITY);
+            } else {
+                userList = userDAO.getAllWhereInActivity(activityId, start, TOTAL_USERS_ACTIVITY);
+            }
+
+            int pageCount = getPageCount(userActivityCount, TOTAL_USERS_ACTIVITY);
             int previousPage = 0;
             if (page > 1)
                 previousPage = page - 1;
@@ -172,19 +215,12 @@ public class ActivityService extends Service {
             if (userActivityCount > TOTAL_USERS_ACTIVITY && page < pageCount)
                 nextPage = page + 1;
 
-            HttpSession session = req.getSession();
-            List<Category> categories = getActivityCategories(activity.getCategories(), Language.EN); // localize
-            List<UserActivity> users = getActivityUsers(activityId, start, TOTAL_USERS_ACTIVITY);
-            UserActivity userActivity = getCreatorInfo((User) session.getAttribute("authUser"), activityId);
-            List<User> usersNotInActivity = getAvailableUsers(activityId);
-            User creator = getCreator(activityId);
-
             req.setAttribute("pageCount", pageCount);
             req.setAttribute("previousPage", previousPage);
             req.setAttribute("nextPage", nextPage);
             req.setAttribute("activity", activity);
             req.setAttribute("categories", categories);
-            req.setAttribute("users", users);
+            req.setAttribute("users", userList);
             req.setAttribute("userActivity", userActivity);
             req.setAttribute("usersNotInActivity", usersNotInActivity);
             req.setAttribute("creator", creator);

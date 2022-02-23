@@ -40,6 +40,7 @@ public class ActivityServlet extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
+            activityService.setQueryStringForPagination(req);
 
             ServletContext context = getServletContext();
             RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/activities/activity/activity.jsp");

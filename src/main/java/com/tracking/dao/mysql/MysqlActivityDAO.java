@@ -68,7 +68,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     public List<Activity> getAll(int peopleFrom, int peopleTo, int start, int total) throws SQLException {
         List<Activity> activityList = null;
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(SELECT_ALL_ACTIVITIES)) {
+             PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITIES)) {
             activityList = new ArrayList<>();
             int c = 0;
             prst.setInt(++c, peopleFrom);
@@ -98,7 +98,7 @@ public class MysqlActivityDAO implements ActivityDAO {
         if (sort.equals("create_time") || sort.equals("people_count"))
             orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(SELECT_ALL_ACTIVITIES_ORDER.replace(ORDER_BY, orderBy))) {
+             PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITIES_ORDER.replace(ORDER_BY, orderBy))) {
             activityList = new ArrayList<>();
             int c = 0;
             prst.setInt(++c, peopleFrom);
@@ -588,7 +588,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     public User getCreator(int activityId) throws SQLException {
         User creator = null;
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(GET_ACTIVITY_CREATOR)) {
+             PreparedStatement prst = con.prepareStatement(SELECT_ACTIVITY_CREATOR)) {
             prst.setInt(1, activityId);
             try (ResultSet rs = prst.executeQuery()) {
                 if (rs.next()) {
@@ -618,6 +618,7 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 if (rs.next()) {
                     activity = mapper.mapRow(rs);
+                    activity.setCategories(withCategories(con, activity.getId()));
                 }
             }
         } catch (SQLException e) {

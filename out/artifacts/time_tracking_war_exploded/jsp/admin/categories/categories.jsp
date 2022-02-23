@@ -27,7 +27,8 @@
                     <a href="#" class="nav-link px-2 link-dark" id="dropdownActivities" data-bs-toggle="dropdown"
                        aria-expanded="false">Activities</a>
                     <ul class="dropdown-menu text-small" aria-labelledby="dropdownActivities">
-                        <li><a href="<%= request.getContextPath() + "/a/activities" %>" class="dropdown-item">Show</a></li>
+                        <li><a href="<%= request.getContextPath() + "/a/activities" %>" class="dropdown-item">Show</a>
+                        </li>
                         <li><a href="<%= request.getContextPath() + "/a/add-act" %>" class="dropdown-item">Add</a>
                         </li>
                     </ul>
@@ -44,7 +45,8 @@
                 </li>
                 <li><a href="<%= request.getContextPath() + "/a/users" %>" class="nav-link px-2 link-dark">Users</a>
                 </li>
-                <li><a href="<%= request.getContextPath() + "/a/requests" %>" class="nav-link px-2 link-dark">Requests</a>
+                <li><a href="<%= request.getContextPath() + "/a/requests" %>"
+                       class="nav-link px-2 link-dark">Requests</a>
                 </li>
             </ul>
 
@@ -107,8 +109,10 @@
                     <button type="submit" class="btn btn-primary ms-2">Search</button>
                 </form>
             </div>
-            <div class="d-flex align-items-center">
-                <form action="<%=request.getContextPath() + "/a/categories"%>" method="get">
+            <div class="d-flex">
+                <form action="<%=request.getContextPath() + "/a/categories"%>"
+                      class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
+                      method="get">
                     <c:if test="${param.lang != null && not empty param.lang}">
                         <input type="hidden" name="lang" value="${param.lang}">
                     </c:if>
@@ -116,7 +120,8 @@
                         <input type="hidden" name="name" value="${param.name}">
                     </c:if>
                     <div class="d-flex">
-                        <select class="form-select" aria-label="Sort by" name="sort" id="sort">
+                        <a href="<%= request.getContextPath() + "/a/categories" %>" class="btn btn-primary">Reset</a>
+                        <select class="form-select ms-2" aria-label="Sort by" name="sort" id="sort">
                             <option value="">Sort by</option>
                             <c:choose>
                                 <c:when test="${param.sort.equals('id')}">
@@ -187,14 +192,16 @@
                 <tbody>
                 <c:forEach var="category" items="${requestScope.categoryList}">
                     <tr>
-                        <td><c:out value="${category.id}" /></td>
-                        <td><c:out value="${category.nameEN}" /></td>
-                        <td><c:out value="${category.nameUA}" /></td>
+                        <td><c:out value="${category.id}"/></td>
+                        <td><c:out value="${category.nameEN}"/></td>
+                        <td><c:out value="${category.nameUA}"/></td>
                         <td>
                             <div>
                                 <c:if test="${category.id > 1}">
-                                    <a href="<%= request.getContextPath() + "/a/edit-cat" %>?id=${category.id}" class="btn btn-primary">Edit</a>
-                                    <a href="<%= request.getContextPath() + "/a/delete-cat" %>?id=${category.id}" class="btn btn-danger">Delete</a>
+                                    <a href="<%= request.getContextPath() + "/a/edit-cat" %>?id=${category.id}"
+                                       class="btn btn-primary">Edit</a>
+                                    <a href="<%= request.getContextPath() + "/a/delete-cat" %>?id=${category.id}"
+                                       class="btn btn-danger">Delete</a>
                                 </c:if>
                             </div>
                         </td>

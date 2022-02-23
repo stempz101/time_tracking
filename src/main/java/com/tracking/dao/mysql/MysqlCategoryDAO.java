@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.tracking.dao.mysql.MysqlConstants.*;
-import static com.tracking.dao.mysql.MysqlConstants.SELECT_ALL_CATEGORIES_UA_ORDER_LIMIT;
 
 public class MysqlCategoryDAO implements CategoryDAO {
 
@@ -70,9 +69,9 @@ public class MysqlCategoryDAO implements CategoryDAO {
             List<Category> categoryList = new ArrayList<>();
             con = factory.getConnection();
             if (language.equals(Language.EN))
-                prst = con.prepareStatement(SELECT_ALL_CATEGORIES_EN_LIMIT);
+                prst = con.prepareStatement(SELECT_CATEGORIES_EN_LIMIT);
             else if (language.equals(Language.UA))
-                prst = con.prepareStatement(SELECT_ALL_CATEGORIES_UA_LIMIT);
+                prst = con.prepareStatement(SELECT_CATEGORIES_UA_LIMIT);
             int c = 0;
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
@@ -105,9 +104,9 @@ public class MysqlCategoryDAO implements CategoryDAO {
             String orderBy = sort + " " + order;
             con = factory.getConnection();
             if (language.equals(Language.EN))
-                prst = con.prepareStatement(SELECT_ALL_CATEGORIES_EN_ORDER_LIMIT.replace(ORDER_BY, orderBy));
+                prst = con.prepareStatement(SELECT_CATEGORIES_EN_ORDER_LIMIT.replace(ORDER_BY, orderBy));
             else if (language.equals(Language.UA))
-                prst = con.prepareStatement(SELECT_ALL_CATEGORIES_UA_ORDER_LIMIT.replace(ORDER_BY, orderBy));
+                prst = con.prepareStatement(SELECT_CATEGORIES_UA_ORDER_LIMIT.replace(ORDER_BY, orderBy));
             int c = 0;
             prst.setInt(++c, start - 1);
             prst.setInt(++c, total);
@@ -200,9 +199,9 @@ public class MysqlCategoryDAO implements CategoryDAO {
             List<Category> categoryList = new ArrayList<>();
             ResultSet rs = null;
             if (language.equals(Language.EN))
-                rs = stmt.executeQuery(SELECT_ALL_CATEGORIES_EN);
+                rs = stmt.executeQuery(SELECT_CATEGORIES_EN);
             else if (language.equals(Language.UA))
-                rs = stmt.executeQuery(SELECT_ALL_CATEGORIES_UA);
+                rs = stmt.executeQuery(SELECT_CATEGORIES_UA);
             CategoryMapper mapper = new CategoryMapper();
             while (rs.next()) {
                 Category category = mapper.mapRow(rs);
@@ -223,9 +222,9 @@ public class MysqlCategoryDAO implements CategoryDAO {
             if (categoryIds != null && !categoryIds.isEmpty()) {
                 categoryList = new ArrayList<>();
                 if (language.equals(Language.EN))
-                    prst = con.prepareStatement(buildWhereInQuery(categoryIds, SELECT_ALL_CATEGORIES_BY_ID_EN));
+                    prst = con.prepareStatement(buildWhereInQuery(categoryIds, SELECT_CATEGORIES_BY_ID_EN));
                 else if (language.equals(Language.UA))
-                    prst = con.prepareStatement(buildWhereInQuery(categoryIds, SELECT_ALL_CATEGORIES_BY_ID_UA));
+                    prst = con.prepareStatement(buildWhereInQuery(categoryIds, SELECT_CATEGORIES_BY_ID_UA));
                 int c = 0;
                 for (int categoryId : categoryIds)
                     prst.setInt(++c, categoryId);
