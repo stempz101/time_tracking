@@ -72,7 +72,7 @@ public class EditActivityServlet extends HttpServlet {
         ActivityDAO activityDAO = factory.getActivityDao();
         try {
             boolean result = activityService.update(session, activity);
-            activityService.updateImage(image, imageName, oldImage, getServletContext().getRealPath(""));
+            activityService.updateActivityImage(image, imageName, oldImage, getServletContext().getRealPath(""));
             if (result) {
                 resp.sendRedirect(req.getContextPath() + "/a/activities");
                 return;

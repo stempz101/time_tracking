@@ -71,7 +71,7 @@ public class AddActivityServlet extends HttpServlet {
 
         try {
             if (activityService.add(session, activity))
-                activityService.saveImage(image, imageName, getServletContext().getRealPath(""));
+                activityService.saveActivityImage(image, imageName, getServletContext().getRealPath(""));
             resp.sendRedirect(req.getContextPath() + "/a/add-act");
         } catch (SQLException e) {
             e.printStackTrace();

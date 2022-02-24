@@ -50,7 +50,9 @@ public interface ActivityDAO {
 
     int getCountWhereLikeAndCategoryIsNull(String searchQuery, int peopleFrom, int peopleTo) throws SQLException;
 
-    int getPeopleCount(int activityId) throws SQLException;
+    int getCountInActivity(int activityId) throws SQLException;
+
+    int getCountInActivityWhereName(int activityId, String lastName, String firstName) throws SQLException;
 
     int getMaxPeopleCount() throws SQLException;
 

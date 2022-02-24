@@ -160,6 +160,7 @@ public class ActivityService extends Service {
         try {
             DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
             UserDAO userDAO = factory.getUserDao();
+            ActivityDAO activityDAO = factory.getActivityDao();
             int activityId = Integer.parseInt(req.getParameter("id"));
 
             HttpSession session = req.getSession();
@@ -181,13 +182,13 @@ public class ActivityService extends Service {
                 start = start + TOTAL_USERS_ACTIVITY * (page - 1);
             }
 
-            int userActivityCount = activity.getPeopleCount();
+            int userActivityCount;
             if (req.getParameter("lastName") != null || req.getParameter("firstName") != null) {
                 String lastName = req.getParameter("lastName");
                 String firstName = req.getParameter("firstName");
                 req.setAttribute("lastName", lastName);
                 req.setAttribute("firstName", firstName);
-                userActivityCount = userDAO.getCountInActivityWhereName(activityId, lastName, firstName);
+                userActivityCount = activityDAO.getCountInActivityWhereName(activityId, lastName, firstName);
                 if (req.getParameter("sort") != null && !req.getParameter("sort").isEmpty()) {
                     String sort = req.getParameter("sort");
                     String order = req.getParameter("order");
@@ -202,8 +203,10 @@ public class ActivityService extends Service {
                 String order = req.getParameter("order");
                 if (order == null || order.isEmpty())
                     order = "asc";
+                userActivityCount = activityDAO.getCountInActivity(activityId);
                 userList = userDAO.getAllInActivityOrder(activityId, sort, order, start, TOTAL_USERS_ACTIVITY);
             } else {
+                userActivityCount = activityDAO.getCountInActivity(activityId);
                 userList = userDAO.getAllWhereInActivity(activityId, start, TOTAL_USERS_ACTIVITY);
             }
 

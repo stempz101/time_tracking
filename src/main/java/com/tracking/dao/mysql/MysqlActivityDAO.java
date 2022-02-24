@@ -94,7 +94,8 @@ public class MysqlActivityDAO implements ActivityDAO {
     public List<Activity> getAllOrder(String sort, String order, int peopleFrom, int peopleTo, int start, int total)
             throws SQLException {
         List<Activity> activityList = null;
-        String orderBy = sort + " " + order;;
+        String orderBy = sort + " " + order;
+        ;
         if (sort.equals("create_time") || sort.equals("people_count"))
             orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
@@ -152,7 +153,8 @@ public class MysqlActivityDAO implements ActivityDAO {
     public List<Activity> getAllLikeOrder(String searchQuery, String sort, String order, int peopleFrom, int peopleTo,
                                           int start, int total) throws SQLException {
         List<Activity> activityList = null;
-        String orderBy = sort + " " + order;;
+        String orderBy = sort + " " + order;
+        ;
         if (sort.equals("create_time") || sort.equals("people_count"))
             orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
@@ -214,7 +216,8 @@ public class MysqlActivityDAO implements ActivityDAO {
     public List<Activity> getAllWhereCategoryOrder(List<Integer> categoryList, String sort, String order, int peopleFrom,
                                                    int peopleTo, int start, int total) throws SQLException {
         List<Activity> activityList;
-        String orderBy = sort + " " + order;;
+        String orderBy = sort + " " + order;
+        ;
         if (sort.equals("create_time") || sort.equals("people_count"))
             orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
@@ -274,7 +277,8 @@ public class MysqlActivityDAO implements ActivityDAO {
     public List<Activity> getAllWhereCategoryIsNullOrder(String sort, String order, int peopleFrom, int peopleTo,
                                                          int start, int total) throws SQLException {
         List<Activity> activityList;
-        String orderBy = sort + " " + order;;
+        String orderBy = sort + " " + order;
+        ;
         if (sort.equals("create_time") || sort.equals("people_count"))
             orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
@@ -336,7 +340,8 @@ public class MysqlActivityDAO implements ActivityDAO {
     public List<Activity> getAllLikeAndWhereCategoryOrder(String searchQuery, List<Integer> categoryList, String sort, String order,
                                                           int peopleFrom, int peopleTo, int start, int total) throws SQLException {
         List<Activity> activityList;
-        String orderBy = sort + " " + order;;
+        String orderBy = sort + " " + order;
+        ;
         if (sort.equals("create_time") || sort.equals("people_count"))
             orderBy = sort + " " + order + ", name";
         try (Connection con = factory.getConnection();
@@ -552,15 +557,40 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public int getPeopleCount(int activityId) throws SQLException {
+    public int getCountInActivity(int activityId) throws SQLException {
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(GET_ACTIVITY_PEOPLE_COUNT)) {
+             PreparedStatement prst = con.prepareStatement(GET_USERS_ACTIVITY_COUNT)) {
             prst.setInt(1, activityId);
             try (ResultSet rs = prst.executeQuery()) {
                 int count = 0;
-                if (rs.next()) {
-                    count = rs.getInt(COL_PEOPLE_COUNT);
-                }
+                if (rs.next())
+                    count = rs.getInt(COL_COUNT);
+                return count;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException();
+        }
+    }
+
+    @Override
+    public int getCountInActivityWhereName(int activityId, String lastName, String firstName) throws SQLException {
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(GET_USERS_ACTIVITY_COUNT_WHERE_NAME)) {
+            int c = 0;
+            if (lastName != null)
+                prst.setString(++c, lastName + "%");
+            else
+                prst.setString(++c, "%");
+            if (firstName != null)
+                prst.setString(++c, firstName + "%");
+            else
+                prst.setString(++c, "%");
+            prst.setInt(++c, activityId);
+            try (ResultSet rs = prst.executeQuery()) {
+                int count = 0;
+                if (rs.next())
+                    count = rs.getInt(COL_COUNT);
                 return count;
             }
         } catch (SQLException e) {

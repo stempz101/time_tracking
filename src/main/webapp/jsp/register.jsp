@@ -12,8 +12,8 @@
 <div class="container">
     <div class="row">
         <div class="col-md-3 col-lg-4"></div>
-        <form action="<%= request.getContextPath() + "/register" %>" class="col-lg-4 border rounded" method="post">
-            <%--            @csrf--%>
+        <form action="<%= request.getContextPath() + "/register" %>" class="col-lg-4 border rounded" method="post"
+              enctype="multipart/form-data">
             <div class="form-group mx-4">
                 <label for="last_name" class="col-form-label-lg">Last Name <p class="d-inline-block mb-0"
                                                                               style="color: red">*</p></label>
@@ -52,6 +52,25 @@
                     <div class="alert alert-danger my-1 py-1">${sessionScope.passwordError}</div>
                 </c:if>
             </div>
+            <div class="form-group mx-4">
+                <label for="confirmPassword" class="col-form-label-lg">Confirm Password <p class="d-inline-block mb-0"
+                                                                            style="color: red">*</p></label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
+                       placeholder="Confirm Password" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required>
+                <c:if test="${sessionScope.confirmError != null}">
+                    <div class="alert alert-danger my-1 py-1">${sessionScope.confirmError}</div>
+                </c:if>
+            </div>
+            <div class="form-group mx-4">
+                <label for="image" class="col-form-label-lg">Photo</label>
+                <input type="file" name="image" id="image" class="form-control"
+                       accept=".jpg,.png,.svg">
+<%--                <c:if test="${sessionScope.activityNameError != null ||--%>
+<%--                                sessionScope.activityCategoriesError != null ||--%>
+<%--                                sessionScope.activityDescriptionError != null}">--%>
+<%--                    <div class="alert alert-primary mt-3 py-1"><b>(Optional)</b> Don't forget choose the preview</div>--%>
+<%--                </c:if>--%>
+            </div>
             <div class="row form-group mx-4 my-3">
                 <button class="btn btn-lg btn-primary" type="submit" name="sendMe" value="1">Register</button>
             </div>
@@ -75,6 +94,7 @@
     session.removeAttribute("firstNameError");
     session.removeAttribute("emailError");
     session.removeAttribute("passwordError");
+    session.removeAttribute("confirmError");
     session.removeAttribute("regError");
 %>
 

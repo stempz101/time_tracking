@@ -163,7 +163,7 @@ public abstract class MysqlConstants {
     public static final String DELETE_CATEGORY = "DELETE FROM categories WHERE id = ?";
 
     // Users
-    public static final String INSERT_USER = "INSERT INTO users (last_name, first_name, email, password) VALUES (?, ?, ?, ?)";
+    public static final String INSERT_USER = "INSERT INTO users (last_name, first_name, email, password, image) VALUES (?, ?, ?, ?, ?)";
     public static final String SELECT_USER = "SELECT * FROM users WHERE id = ?";
     public static final String SELECT_USER_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
     public static final String SELECT_USERS = "SELECT id, last_name, first_name, image, " +
@@ -230,6 +230,7 @@ public abstract class MysqlConstants {
             "users.image, users.is_admin, users.is_blocked FROM activities " +
             "JOIN users ON activities.creator_id = users.id " +
             "WHERE activities.id = ?";
+    public static final String GET_USERS_ACTIVITY_COUNT = "SELECT COUNT(*) count FROM users_activities WHERE activity_id = ?";
     public static final String GET_USERS_ACTIVITY_COUNT_WHERE_NAME = "SELECT COUNT(*) count FROM users " +
             "JOIN users_activities ON user_id = id " +
             "WHERE last_name LIKE ? AND first_name LIKE ? AND activity_id = ?";

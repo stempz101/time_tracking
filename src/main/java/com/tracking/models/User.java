@@ -19,11 +19,12 @@ public class User {
 
     }
 
-    public User(String lastName, String firstName, String email, String password) {
+    public User(String lastName, String firstName, String email, String password, String image) {
         this.lastName = lastName;
         this.firstName = firstName;
         this.email = email;
         this.password = password;
+        this.image = image;
     }
 
     public int getId() {

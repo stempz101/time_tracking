@@ -33,13 +33,14 @@ public class MysqlUserDAO implements UserDAO {
 
     @Override
     public User auth(HttpSession session, String email, String password) throws SQLException {
-        User dbUser = getByEmail(email);
         if (!UserDAO.validateLogin(session, email, password))
             return null;
         if (!checkEmail(email)) {
             session.setAttribute("emailError", "User with this email does not exist");
             return null;
         }
+
+        User dbUser = getByEmail(email);
         if (!checkPassword(dbUser, password)) {
             session.setAttribute("passwordError", "Wrong password entered");
             return null;
@@ -59,11 +60,11 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public User create(HttpSession session, String lastName, String firstName, String email, String password) throws SQLException {
+    public User create(HttpSession session, String lastName, String firstName, String email, String password, String confirmPassword, String image) throws SQLException {
 
         User user;
 
-        if (!UserDAO.validateRegistration(session, lastName, firstName, email, password))
+        if (!UserDAO.validateRegistration(session, lastName, firstName, email, password, confirmPassword))
             return null;
 
         if (ifExists(session, email)) {
@@ -79,8 +80,9 @@ public class MysqlUserDAO implements UserDAO {
             prst.setString(++c, firstName);
             prst.setString(++c, email);
             prst.setString(++c, hashedPassword);
+            prst.setString(++c, image);
             prst.execute();
-            user = new User(lastName, firstName, email, hashedPassword);
+            user = new User(lastName, firstName, email, hashedPassword, image);
             try (ResultSet rs = prst.getGeneratedKeys()) {
                 if (rs.next())
                     user.setId(rs.getInt(1));
@@ -393,6 +395,7 @@ public class MysqlUserDAO implements UserDAO {
                 user.setFirstName(rs.getString(COL_FIRST_NAME));
                 user.setEmail(rs.getString(COL_EMAIL));
                 user.setPassword(rs.getString(COL_PASSWORD));
+                user.setImage(rs.getString(COL_IMAGE));
                 if (rs.getBoolean(COL_IS_ADMIN))
                     user.setAdmin(true);
                 if (rs.getBoolean(COL_IS_BLOCKED))
@@ -431,32 +434,6 @@ public class MysqlUserDAO implements UserDAO {
                 prst.setString(++c, firstName + "%");
             else
                 prst.setString(++c, "%");
-            try (ResultSet rs = prst.executeQuery()) {
-                int count = 0;
-                if (rs.next())
-                    count = rs.getInt(COL_COUNT);
-                return count;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException();
-        }
-    }
-
-    @Override
-    public int getCountInActivityWhereName(int activityId, String lastName, String firstName) throws SQLException {
-        try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(GET_USERS_ACTIVITY_COUNT_WHERE_NAME)) {
-            int c = 0;
-            if (lastName != null)
-                prst.setString(++c, lastName + "%");
-            else
-                prst.setString(++c, "%");
-            if (firstName != null)
-                prst.setString(++c, firstName + "%");
-            else
-                prst.setString(++c, "%");
-            prst.setInt(++c, activityId);
             try (ResultSet rs = prst.executeQuery()) {
                 int count = 0;
                 if (rs.next())

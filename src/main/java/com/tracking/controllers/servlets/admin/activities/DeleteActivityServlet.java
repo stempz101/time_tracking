@@ -36,7 +36,7 @@ public class DeleteActivityServlet extends HttpServlet {
         try {
             Activity activity = activityService.get(activityId);
             activityService.delete(req.getSession(), activityId);
-            activityService.deleteImage(activity.getImage(), getServletContext().getRealPath(""));
+            activityService.deleteActivityImage(activity.getImage(), getServletContext().getRealPath(""));
             resp.sendRedirect(req.getContextPath() + "/a/activities");
         } catch (SQLException e) {
             e.printStackTrace();

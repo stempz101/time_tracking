@@ -16,7 +16,7 @@ public interface UserDAO {
 
     boolean checkPassword(User user, String password);
 
-    User create(HttpSession session, String lastName, String firstName, String email, String password) throws SQLException;
+    User create(HttpSession session, String lastName, String firstName, String email, String password, String confirmPassword, String image) throws SQLException;
 
     boolean ifExists(HttpSession session, String email) throws SQLException;
 
@@ -52,8 +52,6 @@ public interface UserDAO {
 
     int getCountWhereName(String lastName, String firstName) throws SQLException;
 
-    int getCountInActivityWhereName(int activityId, String lastName, String firstName) throws SQLException;
-
     void setAdmin(int userId, boolean isAdmin) throws SQLException;
 
     void setBlock(int userId, boolean isBlocked) throws SQLException;
@@ -87,7 +85,8 @@ public interface UserDAO {
         return errorCount == 0;
     }
 
-    static boolean validateRegistration(HttpSession session, String lastName, String firstName, String email, String password) {
+    static boolean validateRegistration(HttpSession session, String lastName, String firstName, String email,
+                                        String password, String confirmPassword) {
         int errorCount = 0;
         if (lastName == null || lastName.isEmpty()) {
             session.setAttribute("lastNameError", "Last name cannot be empty");
@@ -118,6 +117,14 @@ public interface UserDAO {
             errorCount++;
         } else if (!password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
             session.setAttribute("passwordError", "Password input is invalid");
+            errorCount++;
+        }
+
+        if (confirmPassword == null || confirmPassword.isEmpty()) {
+            session.setAttribute("confirmError", "Confirm your password");
+            errorCount++;
+        } else if (!confirmPassword.equals(password)) {
+            session.setAttribute("confirmError", "Confirmation does not match your password");
             errorCount++;
         }
 

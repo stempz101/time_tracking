@@ -52,7 +52,22 @@ public abstract class Service {
         return new Date().getTime() + "." + ext;
     }
 
-    public void saveImage(Part part, String filename, String realPath) throws IOException {
+    public void saveUserImage(Part part, String filename, String realPath) throws IOException {
+        if (filename == null || filename.isEmpty())
+            return;
+        String uploadPath = realPath + FilePaths.USER_IMG_UPLOAD_DIRECTORY;
+        File uploadDir = new File(uploadPath);
+        if (!uploadDir.exists())
+            uploadDir.mkdirs();
+        try {
+            part.write(uploadPath + filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IOException();
+        }
+    }
+
+    public void saveActivityImage(Part part, String filename, String realPath) throws IOException {
         if (filename == null || filename.isEmpty())
             return;
         String uploadPath = realPath + FilePaths.ACTIVITY_IMG_UPLOAD_DIRECTORY;
@@ -67,7 +82,7 @@ public abstract class Service {
         }
     }
 
-    public void updateImage(Part part, String filename, String oldImage, String realPath) throws IOException {
+    public void updateActivityImage(Part part, String filename, String oldImage, String realPath) throws IOException {
         if (filename == null || filename.isEmpty())
             return;
         if (oldImage == null || oldImage.isEmpty()) {
@@ -96,7 +111,7 @@ public abstract class Service {
         }
     }
 
-    public void deleteImage(String image, String realPath) {
+    public void deleteActivityImage(String image, String realPath) {
         if (image == null || image.isEmpty())
             return;
         String oldImagePath = realPath + FilePaths.ACTIVITY_IMG_UPLOAD_DIRECTORY + image;

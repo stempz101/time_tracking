@@ -6,15 +6,14 @@ import com.tracking.services.RegisterService;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 
 import java.io.IOException;
 
 @WebServlet("/register")
+@MultipartConfig
 public class RegisterServlet extends HttpServlet {
 
     private RegisterService registerService = null;
@@ -37,16 +36,20 @@ public class RegisterServlet extends HttpServlet {
         String firstName = req.getParameter("first_name");
         String email = req.getParameter("email");
         String password = req.getParameter("password");
+        String confirmPassword = req.getParameter("confirmPassword");
+        Part image = req.getPart("image");
+        String imageName = registerService.setImageName(image);
 
         HttpSession session = req.getSession();
         saveFields(session, lastName, firstName, email, password);
 
-        User user = registerService.registerUser(session, lastName, firstName, email, password);
+        User user = registerService.registerUser(session, lastName, firstName, email, password, confirmPassword, imageName);
         if (user == null) {
             resp.sendRedirect(req.getContextPath() + "/register");
             return;
         }
 
+        registerService.saveUserImage(image, user.getImage(), getServletContext().getRealPath(""));
         deleteAttributes(session);
         session.setAttribute("authUser", user);
         resp.sendRedirect(req.getContextPath() + "/u/activities");
