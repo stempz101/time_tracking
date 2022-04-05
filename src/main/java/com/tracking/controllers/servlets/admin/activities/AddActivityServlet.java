@@ -1,15 +1,14 @@
 package com.tracking.controllers.servlets.admin.activities;
 
-import com.tracking.controllers.constants.FilePaths;
-import com.tracking.dao.ActivityDAO;
-import com.tracking.dao.CategoryDAO;
-import com.tracking.dao.DAOFactory;
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
 import com.tracking.models.Activity;
 import com.tracking.models.Category;
 import com.tracking.models.User;
 import com.tracking.lang.Language;
-import com.tracking.services.activities.ActivityService;
-import com.tracking.services.categories.CategoriesService;
+import com.tracking.controllers.services.activities.ActivityService;
+import com.tracking.controllers.services.categories.CategoriesService;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -17,16 +16,18 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
+/**
+ * Servlet, that responsible for showing Add Activity page and creating action (admin)
+ */
 @WebServlet("/a/add-act")
 @MultipartConfig
 public class AddActivityServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(AddActivityServlet.class);
 
     ActivityService activityService = null;
     CategoriesService categoriesService = null;
@@ -39,16 +40,15 @@ public class AddActivityServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession();
         try {
-            List<Category> categoryList = categoriesService.getAllCategories(Language.EN);  // localize
-            session.setAttribute("categoryList", categoryList);
-
-            ServletContext context = getServletContext();
-            RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/activities/addActivity.jsp");
-            requestDispatcher.forward(req, resp);
-        } catch (SQLException e) {
+            Service.setLang(req);
+            List<Category> categoryList = categoriesService.getAllCategories(Service.getLocale(req));  // localize
+            req.setAttribute("categoryList", categoryList);
+            logger.info("Opening Add Activity page (admin)");
+            req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/admin/activities/addActivity.jsp").forward(req, resp);
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -64,17 +64,19 @@ public class AddActivityServlet extends HttpServlet {
         User authUser = (User) session.getAttribute("authUser");
         Activity activity = (Activity) session.getAttribute("activity");
         if (activity == null)
-            activity = new Activity(name, categoryIds, description, imageName, authUser.getId(), Activity.Status.BY_ADMIN);
+            activity = new Activity(name, categoryIds, description, imageName, authUser.getId(), true);
         else
             saveFields(name, categoryIds, description, imageName, activity);
         session.setAttribute("activity", activity);
 
         try {
-            if (activityService.add(session, activity))
+            if (activityService.add(req, activity))
                 activityService.saveActivityImage(image, imageName, getServletContext().getRealPath(""));
+            logger.info("Redirecting to " + Service.getFullURL(req, "/a/add-act"));
             resp.sendRedirect(req.getContextPath() + "/a/add-act");
-        } catch (SQLException e) {
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 

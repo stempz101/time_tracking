@@ -1,8 +1,9 @@
 package com.tracking.controllers.servlets.admin.users;
 
-import com.tracking.dao.DAOFactory;
-import com.tracking.dao.UserDAO;
-import com.tracking.services.users.UsersService;
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
+import com.tracking.controllers.services.users.UsersService;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,9 +13,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ResourceBundle;
 
+/**
+ * Servlet, that responsible for blocking/unblocking user (admin)
+ */
 @WebServlet("/a/user-set-block")
 public class SetBlockServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(SetBlockServlet.class);
 
     UsersService usersService = null;
 
@@ -32,19 +39,19 @@ public class SetBlockServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         int userId = Integer.parseInt(req.getParameter("id"));
         boolean isBlocked = Boolean.parseBoolean(req.getParameter("value"));
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        UserDAO userDAO = factory.getUserDao();
-
         try {
             HttpSession session = req.getSession();
             usersService.setBlock(userId, isBlocked);
+            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
             if (isBlocked)
-                session.setAttribute("successMessage", "");
+                session.setAttribute("successMessage", bundle.getString("message.user_blocked"));
             else
-                session.setAttribute("successMessage", "");
+                session.setAttribute("successMessage", bundle.getString("message.user_unblocked"));
+            logger.info("Redirecting to " + Service.getFullURL(req, "/a/users"));
             resp.sendRedirect(req.getContextPath() + "/a/users");
-        } catch (SQLException e) {
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 }

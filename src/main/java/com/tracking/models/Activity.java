@@ -1,30 +1,70 @@
 package com.tracking.models;
 
+import java.util.Date;
 import java.util.List;
 
+/**
+ * Activity Model. Here there is defined what need to store
+ */
 public class Activity {
 
+    /**
+     * Id of activity
+     */
     private int id;
+    /**
+     * Name of activity
+     */
     private String name;
+    /**
+     * Categories of activity
+     */
     private List<Integer> categories;
+    /**
+     * Description of activity
+     */
     private String description;
+    /**
+     * Filename of activity image
+     */
     private String image;
+    /**
+     * People count in activity
+     */
     private int peopleCount;
+    /**
+     * Creator id of activity
+     */
     private int creatorId;
-    private String createTime;
-    private Status status;
+    /**
+     * Created by admin/user
+     */
+    private boolean byAdmin;
+    /**
+     * Creation time of activity
+     */
+    private Date createTime;
+    /**
+     * Is this activity sent for delete
+     */
+    private boolean forDelete = false;
 
     public Activity() {
 
     }
 
-    public Activity(String name, List<Integer> categories, String description, String image, int creatorId, Status status) {
+    public Activity(String name, List<Integer> categories, String description, String image, int creatorId, boolean byAdmin) {
         this.name = name;
         this.categories = categories;
         this.description = description;
         this.image = image;
         this.creatorId = creatorId;
-        this.status = status;
+        this.byAdmin = byAdmin;
+    }
+
+    public Activity(int id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     public int getId() {
@@ -83,20 +123,28 @@ public class Activity {
         this.creatorId = creatorId;
     }
 
-    public String getCreateTime() {
+    public boolean isByAdmin() {
+        return byAdmin;
+    }
+
+    public void setByAdmin(boolean byAdmin) {
+        this.byAdmin = byAdmin;
+    }
+
+    public Date getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(String createTime) {
+    public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
 
-    public Status getStatus() {
-        return status;
+    public boolean isForDelete() {
+        return forDelete;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setForDelete(boolean forDelete) {
+        this.forDelete = forDelete;
     }
 
     public void clear() {
@@ -106,10 +154,10 @@ public class Activity {
         image = null;
     }
 
-    public enum Status {
-        WAITING,
-        CONFIRMED,
-        DECLINED,
-        BY_ADMIN
-    }
+//    public enum Status {
+//        WAITING,
+//        CONFIRMED,
+//        DECLINED,
+//        BY_ADMIN
+//    }
 }

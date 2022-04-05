@@ -1,8 +1,9 @@
 package com.tracking.controllers.servlets.admin.categories;
 
-import com.tracking.dao.CategoryDAO;
-import com.tracking.dao.DAOFactory;
-import com.tracking.services.categories.CategoryService;
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
+import com.tracking.controllers.services.categories.CategoryService;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,8 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
+/**
+ * Servlet, that responsible for deleting category (admin)
+ */
 @WebServlet("/a/delete-cat")
 public class DeleteCategoryServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(DeleteCategoryServlet.class);
 
     CategoryService categoryService = null;
 
@@ -32,10 +38,12 @@ public class DeleteCategoryServlet extends HttpServlet {
         int categoryId = Integer.parseInt(req.getParameter("id"));
 
         try {
-            categoryService.delete(req.getSession(), categoryId);
+            categoryService.delete(req, categoryId);
+            logger.info("Redirecting to " + Service.getFullURL(req, "/a/categories"));
             resp.sendRedirect(req.getContextPath() + "/a/categories");
-        } catch (SQLException e) {
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 }

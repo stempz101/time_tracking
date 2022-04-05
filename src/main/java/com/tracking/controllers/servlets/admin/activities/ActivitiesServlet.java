@@ -1,6 +1,10 @@
 package com.tracking.controllers.servlets.admin.activities;
 
-import com.tracking.services.activities.ActivitiesService;
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
+import com.tracking.controllers.services.activities.ActivitiesService;
+import com.tracking.controllers.servlets.RegisterServlet;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -12,8 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
+/**
+ * Servlet, that responsible for showing Activities page (admin)
+ */
 @WebServlet("/a/activities")
 public class ActivitiesServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(ActivitiesServlet.class);
 
     private ActivitiesService activitiesService = null;
 
@@ -25,15 +34,15 @@ public class ActivitiesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            activitiesService.processActivities(req);
-            if (req.getQueryString() != null)
-                activitiesService.setQueryStringForPagination(req);
-
-            ServletContext context = getServletContext();
-            RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/activities/activities.jsp");
-            requestDispatcher.forward(req, resp);
-        } catch (SQLException e) {
+            Service.setLang(req);
+            if (!activitiesService.processActivities(req, resp))
+                return;
+            activitiesService.setQueryStringForPagination(req);
+            logger.info("Opening Activities page (admin)");
+            req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/admin/activities/activities.jsp").forward(req, resp);
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 }

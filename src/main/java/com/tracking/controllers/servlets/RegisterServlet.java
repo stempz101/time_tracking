@@ -1,7 +1,10 @@
 package com.tracking.controllers.servlets;
 
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
 import com.tracking.models.User;
-import com.tracking.services.RegisterService;
+import com.tracking.controllers.services.RegisterService;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -11,10 +14,16 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
+/**
+ * Servlet, that responsible for showing Registration page and register action (unauthorized)
+ */
 @WebServlet("/register")
 @MultipartConfig
 public class RegisterServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(RegisterServlet.class);
 
     private RegisterService registerService = null;
 
@@ -25,9 +34,8 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ServletContext context = getServletContext();
-        RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/register.jsp");
-        requestDispatcher.forward(req, resp);
+        logger.info("Opening Registration page");
+        req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(req, resp);
     }
 
     @Override
@@ -40,33 +48,24 @@ public class RegisterServlet extends HttpServlet {
         Part image = req.getPart("image");
         String imageName = registerService.setImageName(image);
 
-        HttpSession session = req.getSession();
-        saveFields(session, lastName, firstName, email, password);
+        try {
+            User user = registerService.registerUser(req, lastName, firstName, email, password, confirmPassword, imageName);
+            if (user == null) {
+                logger.info("Redirecting to " + Service.getFullURL(req, "/register"));
+                resp.sendRedirect(req.getContextPath() + "/register");
+                return;
+            }
 
-        User user = registerService.registerUser(session, lastName, firstName, email, password, confirmPassword, imageName);
-        if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/register");
-            return;
+            logger.info("User (id=" + user.getId() + ") registration were successful");
+            registerService.saveUserImage(image, user.getImage(), getServletContext().getRealPath(""));
+            logger.info("Authorized user (id=" + user.getId() + ", isAdmin=" + user.isAdmin() +  "): " +
+                            user.getLastName() + " " + user.getFirstName());
+            req.getSession().setAttribute("authUser", user);
+            logger.info("Redirecting to " + Service.getFullURL(req, "/register"));
+            resp.sendRedirect(req.getContextPath() + "/u/activities");
+        } catch (ServiceException e) {
+            e.printStackTrace();
+            logger.error(e);
         }
-
-        registerService.saveUserImage(image, user.getImage(), getServletContext().getRealPath(""));
-        deleteAttributes(session);
-        session.setAttribute("authUser", user);
-        resp.sendRedirect(req.getContextPath() + "/u/activities");
-    }
-
-    private void saveFields(HttpSession session, String lastName, String firstName, String email, String password) {
-        session.setAttribute("lastName", lastName);
-        session.setAttribute("firstName", firstName);
-        session.setAttribute("email", email);
-        session.setAttribute("password", password);
-    }
-
-    private void deleteAttributes(HttpSession session) {
-        session.removeAttribute("lastName");
-        session.removeAttribute("firstName");
-        session.removeAttribute("email");
-        session.removeAttribute("password");
-        session.removeAttribute("regError");
     }
 }

@@ -1,14 +1,54 @@
 package com.tracking.models;
 
+import java.util.Date;
+
+/**
+ * UserActivity Model. Here there is defined what need to store
+ */
 public class UserActivity {
+    /**
+     * Id of user
+     */
     private int userId;
+    /**
+     * Last name of user
+     */
     private String userLastName;
+    /**
+     * First name of user
+     */
     private String userFirstName;
+    /**
+     * Filename of user image
+     */
     private String userImage;
+    /**
+     * Is this user admin/user
+     */
     private boolean isAdmin;
-    private String startTime;
-    private String stopTime;
+    /**
+     * Id of activity
+     */
+    private int activityId;
+    /**
+     * Name of activity
+     */
+    private String activityName;
+    /**
+     * Start time of activity
+     */
+    private Date startTime;
+    /**
+     * Stop time of activity
+     */
+    private Date stopTime;
+    /**
+     * Total spent time on activity since adding in
+     */
     private double spentTime;
+    /**
+     * Status of user in activity
+     */
     private Status status;
 
     public int getUserId() {
@@ -51,19 +91,35 @@ public class UserActivity {
         isAdmin = admin;
     }
 
-    public String getStartTime() {
+    public int getActivityId() {
+        return activityId;
+    }
+
+    public void setActivityId(int activityId) {
+        this.activityId = activityId;
+    }
+
+    public String getActivityName() {
+        return activityName;
+    }
+
+    public void setActivityName(String activityName) {
+        this.activityName = activityName;
+    }
+
+    public Date getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(String startTime) {
+    public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
-    public String getStopTime() {
+    public Date getStopTime() {
         return stopTime;
     }
 
-    public void setStopTime(String stopTime) {
+    public void setStopTime(Date stopTime) {
         this.stopTime = stopTime;
     }
 

@@ -1,10 +1,9 @@
 package com.tracking.controllers.servlets.admin.categories;
 
-import com.tracking.dao.CategoryDAO;
-import com.tracking.dao.DAOFactory;
-import com.tracking.models.Category;
-import com.tracking.lang.Language;
-import com.tracking.services.categories.CategoriesService;
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
+import com.tracking.controllers.services.categories.CategoriesService;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -15,10 +14,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
+/**
+ * Servlet, that responsible for showing Categories page (admin)
+ */
 @WebServlet("/a/categories")
 public class CategoriesServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(CategoriesServlet.class);
 
     CategoriesService categoriesService = null;
 
@@ -30,22 +33,15 @@ public class CategoriesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            if (!categoriesService.processCategories(req)) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            Service.setLang(req);
+            if (!categoriesService.processCategories(req, resp))
                 return;
-            }
-            if (req.getQueryString() != null)
-                categoriesService.setQueryStringForPagination(req);
-
-            ServletContext context = getServletContext();
-            RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/categories/categories.jsp");
-            requestDispatcher.forward(req, resp);
-        } catch (SQLException e) {
+            categoriesService.setQueryStringForPagination(req);
+            logger.info("Opening Categories page (admin)");
+            req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/admin/categories/categories.jsp").forward(req, resp);
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
-    }
-
-    private void getProcess(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
     }
 }

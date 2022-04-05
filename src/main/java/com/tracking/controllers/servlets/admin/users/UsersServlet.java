@@ -1,9 +1,9 @@
 package com.tracking.controllers.servlets.admin.users;
 
-import com.tracking.dao.DAOFactory;
-import com.tracking.dao.UserDAO;
-import com.tracking.models.User;
-import com.tracking.services.users.UsersService;
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
+import com.tracking.controllers.services.users.UsersService;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -14,10 +14,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
+/**
+ * Servlet, that responsible for showing Users page (admin)
+ */
 @WebServlet("/a/users")
 public class UsersServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(UsersServlet.class);
 
     UsersService usersService = null;
 
@@ -29,17 +33,15 @@ public class UsersServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            if (!usersService.processUsers(req, resp)) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            Service.setLang(req);
+            if (!usersService.processUsers(req, resp))
                 return;
-            }
             usersService.setQueryStringForPagination(req);
-
-            ServletContext context = getServletContext();
-            RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/users/users.jsp");
-            requestDispatcher.forward(req, resp);
-        } catch (SQLException e) {
+            logger.info("Opening Users page (admin)");
+            req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/admin/users/users.jsp").forward(req, resp);
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 }

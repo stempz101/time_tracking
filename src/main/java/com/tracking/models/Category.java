@@ -1,9 +1,21 @@
 package com.tracking.models;
 
+/**
+ * Category Model. Here there is defined what need to store
+ */
 public class Category {
 
+    /**
+     * Id of category
+     */
     private int id;
+    /**
+     * Name of category in English
+     */
     private String nameEN;
+    /**
+     * Name of category in Ukrainian
+     */
     private String nameUA;
 
     public Category() {

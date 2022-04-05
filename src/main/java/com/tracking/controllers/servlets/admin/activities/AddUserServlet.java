@@ -1,0 +1,54 @@
+package com.tracking.controllers.servlets.admin.activities;
+
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
+import com.tracking.models.User;
+import com.tracking.controllers.services.activities.ActivityService;
+import org.apache.log4j.Logger;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ResourceBundle;
+
+/**
+ * Servlet, that responsible for adding user to activity (admin)
+ */
+@WebServlet("/a/activity-add-user")
+public class AddUserServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(AddUserServlet.class);
+
+    ActivityService activityService = null;
+
+    @Override
+    public void init() throws ServletException {
+        activityService = new ActivityService();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        int activityId = Integer.parseInt(req.getParameter("activity"));
+        int userId = Integer.parseInt(req.getParameter("user"));
+
+        try {
+            activityService.addUser(activityId, userId);
+
+            User authUser = (User) req.getSession().getAttribute("authUser");
+            if (authUser.isAdmin()) {
+                logger.info("Redirecting to " + Service.getFullURL(req, "/a/activity?id=" + activityId));
+                resp.sendRedirect(req.getContextPath() + "/a/activity?id=" + activityId);
+            } else {
+                logger.info("Redirecting to " + Service.getFullURL(req, "/u/activity?id=" + activityId));
+                resp.sendRedirect(req.getContextPath() + "/u/activity?id=" + activityId);
+            }
+        } catch (ServiceException e) {
+            e.printStackTrace();
+            logger.error(e);
+        }
+    }
+}

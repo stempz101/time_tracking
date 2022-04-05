@@ -13,6 +13,9 @@ import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+/**
+ * Servlet, that responsible for showing image (admin)
+ */
 @WebServlet("/img/*")
 public class DisplayImageServlet extends HttpServlet {
     @Override

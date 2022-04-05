@@ -1,5 +1,11 @@
 package com.tracking.controllers.servlets.user.activities;
 
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
+import com.tracking.controllers.services.activities.ActivitiesService;
+import com.tracking.controllers.servlets.profile.ProfileServlet;
+import org.apache.log4j.Logger;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -8,18 +14,35 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 
+/**
+ * Servlet, that responsible for showing Activities page (user)
+ */
 @WebServlet("/u/activities")
 public class ActivitiesServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(ActivitiesServlet.class);
+
+    private ActivitiesService activitiesService = null;
+
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ServletContext context = getServletContext();
-        RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/user/activities/activities.jsp");
-        requestDispatcher.forward(req, resp);
+    public void init() throws ServletException {
+        activitiesService = new ActivitiesService();
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            Service.setLang(req);
+            if (!activitiesService.processActivities(req, resp))
+                return;
+            activitiesService.setQueryStringForPagination(req);
+            logger.info("Opening Activities page (user)");
+            req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/user/activities/activities.jsp").forward(req, resp);
+        } catch (ServiceException e) {
+            e.printStackTrace();
+            logger.error(e);
+        }
     }
 }

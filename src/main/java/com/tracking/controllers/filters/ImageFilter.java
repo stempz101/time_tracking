@@ -7,6 +7,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+/**
+ * Filter, that gives access to the photos for authorized users
+ */
 @WebFilter("/img/*")
 public class ImageFilter implements Filter {
     @Override

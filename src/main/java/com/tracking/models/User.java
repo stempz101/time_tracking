@@ -2,17 +2,50 @@ package com.tracking.models;
 
 import java.util.Objects;
 
+/**
+ * User Model. Here there is defined what need to store
+ */
 public class User {
 
+    /**
+     * Id of user
+     */
     private int id;
+    /**
+     * Last name of user
+     */
     private String lastName;
+    /**
+     * First name of user
+     */
     private String firstName;
+    /**
+     * Email of user
+     */
     private String email;
+    /**
+     * Password of user
+     */
     private String password;
+    /**
+     * Filename of user image
+     */
     private String image;
+    /**
+     * Count of activities, in which user participates
+     */
     private int activityCount;
+    /**
+     * Total spent time on activities
+     */
     private double spentTime;
+    /**
+     * Is this user admin/user
+     */
     private boolean isAdmin = false;
+    /**
+     * Is this user blocked/unblocked
+     */
     private boolean isBlocked = false;
 
     public User() {
@@ -24,6 +57,13 @@ public class User {
         this.firstName = firstName;
         this.email = email;
         this.password = password;
+        this.image = image;
+    }
+
+    public User(int id, String lastName, String firstName, String image) {
+        this.id = id;
+        this.lastName = lastName;
+        this.firstName = firstName;
         this.image = image;
     }
 

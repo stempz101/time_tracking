@@ -1,14 +1,13 @@
 package com.tracking.controllers.servlets.admin.activities;
 
-import com.tracking.controllers.constants.FilePaths;
-import com.tracking.dao.ActivityDAO;
-import com.tracking.dao.CategoryDAO;
-import com.tracking.dao.DAOFactory;
+import com.tracking.controllers.exceptions.ServiceException;
+import com.tracking.controllers.services.Service;
 import com.tracking.models.Activity;
 import com.tracking.models.Category;
 import com.tracking.lang.Language;
-import com.tracking.services.activities.ActivityService;
-import com.tracking.services.categories.CategoriesService;
+import com.tracking.controllers.services.activities.ActivityService;
+import com.tracking.controllers.services.categories.CategoriesService;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -16,16 +15,18 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
+/**
+ * Servlet, that responsible for showing Edit Activity page and updating activity (admin)
+ */
 @WebServlet("/a/edit-act")
 @MultipartConfig
 public class EditActivityServlet extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(EditActivityServlet.class);
 
     ActivityService activityService = null;
     CategoriesService categoriesService = null;
@@ -38,20 +39,20 @@ public class EditActivityServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Service.setLang(req);
         int id = Integer.parseInt(req.getParameter("id"));
         HttpSession session = req.getSession();
 
         try {
             Activity activity = activityService.get(id);
-            List<Category> categoryList = categoriesService.getAllCategories(Language.EN); // localize
+            List<Category> categoryList = categoriesService.getAllCategories(Service.getLocale(req)); // localize
             session.setAttribute("activity", activity);
             session.setAttribute("categoryList", categoryList);
-
-            ServletContext context = getServletContext();
-            RequestDispatcher requestDispatcher = context.getRequestDispatcher("/jsp/admin/activities/editActivity.jsp");
-            requestDispatcher.forward(req, resp);
-        } catch (SQLException e) {
+            logger.info("Opening Edit Activity page (admin)");
+            req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/admin/activities/editActivity.jsp").forward(req, resp);
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -63,23 +64,22 @@ public class EditActivityServlet extends HttpServlet {
         Part image = req.getPart("activityImage");
         String imageName = activityService.setImageName(image);
 
-        HttpSession session = req.getSession();
-        Activity activity = (Activity) session.getAttribute("activity");
+        Activity activity = (Activity) req.getSession().getAttribute("activity");
         String oldImage = activity.getImage();
         saveFields(name, categoryIds, description, imageName, activity);
 
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
         try {
-            boolean result = activityService.update(session, activity);
-            activityService.updateActivityImage(image, imageName, oldImage, getServletContext().getRealPath(""));
-            if (result) {
+            if (activityService.update(req, activity)) {
+                activityService.updateActivityImage(image, imageName, oldImage, getServletContext().getRealPath(""));
+                logger.info("Redirecting to " + Service.getFullURL(req, "/a/activities"));
                 resp.sendRedirect(req.getContextPath() + "/a/activities");
                 return;
             }
+            logger.info("Redirecting to " + Service.getFullURL(req, "/a/edit-act?id=" + activity.getId()));
             resp.sendRedirect(req.getContextPath() + "/a/edit-act?id=" + activity.getId());
-        } catch (SQLException e) {
+        } catch (ServiceException e) {
             e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -87,7 +87,6 @@ public class EditActivityServlet extends HttpServlet {
         activity.setName(name);
         activity.setCategories(categoryIds);
         activity.setDescription(description);
-        if (image != null && !image.isEmpty())
-            activity.setImage(image);
+        activity.setImage(image);
     }
 }

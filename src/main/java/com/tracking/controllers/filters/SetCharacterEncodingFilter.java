@@ -4,6 +4,9 @@ import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import java.io.IOException;
 
+/**
+ * Filter, that sets content-type and encoding for all existing pages
+ */
 @WebFilter("/*")
 public class SetCharacterEncodingFilter implements Filter {
     @Override
