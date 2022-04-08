@@ -1,6 +1,7 @@
 package com.tracking.models;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Category Model. Here there is defined what need to store
@@ -36,6 +37,20 @@ public class Request {
      */
     private User creator;
 
+    public Request() {
+
+    }
+
+    public Request(int id, int activityId, Status status, boolean forDelete, Date createTime, Activity activity, User creator) {
+        this.id = id;
+        this.activityId = activityId;
+        this.status = status;
+        this.forDelete = forDelete;
+        this.createTime = createTime;
+        this.activity = activity;
+        this.creator = creator;
+    }
+
     public Request(int id, int activityId, Status status, boolean forDelete, Date createTime) {
         this.id = id;
         this.activityId = activityId;
@@ -44,8 +59,19 @@ public class Request {
         this.createTime = createTime;
     }
 
-    public Request() {
+    public Request(int id, int activityId, Status status, boolean forDelete, Activity activity) {
+        this.id = id;
+        this.activityId = activityId;
+        this.status = status;
+        this.forDelete = forDelete;
+        this.activity = activity;
+    }
 
+    public Request(int id, Status status, boolean forDelete, Activity activity) {
+        this.id = id;
+        this.status = status;
+        this.forDelete = forDelete;
+        this.activity = activity;
     }
 
     public int getId() {
@@ -117,5 +143,18 @@ public class Request {
         public String getValue() {
             return value;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Request request = (Request) o;
+        return id == request.id && activityId == request.activityId && forDelete == request.forDelete && status == request.status && Objects.equals(createTime, request.createTime) && Objects.equals(activity, request.activity) && Objects.equals(creator, request.creator);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, activityId, status, forDelete, createTime, activity, creator);
     }
 }

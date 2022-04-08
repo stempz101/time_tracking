@@ -17,23 +17,12 @@ public interface CategoryDAO {
 
     /**
      * Creates category in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param nameEN entered name in English
      * @param nameUA entered name in Ukrainian
-     * @return true if category is created, false if category didn't go through validation and if it exists
+     * @return created category
      * @throws DBException if something went wrong while executing
      */
-    boolean create(HttpServletRequest req, String nameEN, String nameUA) throws DBException;
-
-    /**
-     * Checking if category exists in DB
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param name category name
-     * @param language language for checking name on this selected
-     * @return true if exists
-     * @throws DBException if something went wrong while executing
-     */
-    boolean ifExists(HttpServletRequest req, String name, Language language) throws DBException;
+    Category create(String nameEN, String nameUA) throws DBException;
 
     /**
      * Getting all categories from DB
@@ -49,8 +38,8 @@ public interface CategoryDAO {
 
     /**
      * Getting all categories by name from DB
+     * @param searchLang chosen language for search
      * @param name entered name
-     * @param locale locale for selection by chosen language
      * @param sort sort type
      * @param order order type
      * @param start index of item, from which selection will start
@@ -58,7 +47,7 @@ public interface CategoryDAO {
      * @return received categories
      * @throws DBException if something went wrong while executing
      */
-    List<Category> getAllWhereName(String name, Locale locale, String sort, String order, int start, int total) throws DBException;
+    List<Category> getAllWhereName(String searchLang, String name, String sort, String order, int start, int total) throws DBException;
 
     /**
      * Getting all categories for Activity page from DB
@@ -95,6 +84,16 @@ public interface CategoryDAO {
     Category getByName(String name, Language language) throws DBException;
 
     /**
+     * Getting category by name in editing in order to check for existing
+     * @param id id of editing category
+     * @param name entered name
+     * @param language language of name
+     * @return received category if exists
+     * @throws DBException if something went wrong while executing
+     */
+    Category getByNameOther(int id, String name, Language language) throws DBException;
+
+    /**
      * Getting count of categories from DB
      * @return count of categories
      * @throws DBException if something went wrong while executing
@@ -104,76 +103,45 @@ public interface CategoryDAO {
     /**
      * Getting count of categories by name from DB
      * @param name entered name
-     * @param locale locale for selection by chosen language
+     * @param lang chosen language for search
      * @return count of categories
      * @throws DBException if something went wrong while executing
      */
-    int getCountWhereName(String name, Locale locale) throws DBException;
+    int getCountWhereName(String name, String lang) throws DBException;
 
     /**
      * Updating category in DB
-     * @param req for getting session to get/set attributes, getting parameters
+     * @param categoryId id of category
      * @param nameEN entered name in English
      * @param nameUA entered name in Ukrainian
      * @return true if category is updated, false if category didn't go through validation and if it exists
      * @throws DBException if something went wrong while executing
      */
-    boolean update(HttpServletRequest req, String nameEN, String nameUA) throws DBException;
+    boolean update(int categoryId, String nameEN, String nameUA) throws DBException;
 
     /**
      * Deleting category from DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param id id of category
+     * @return true if category is deleted
      * @throws DBException if something went wrong while executing
      */
-    void delete(HttpServletRequest req, int id) throws DBException;
-
-    /**
-     * Category validation
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param nameEN entered name in English
-     * @param nameUA entered name in Ukrainian
-     * @return true if validation was successful
-     */
-    static boolean validateCategory(HttpServletRequest req, String nameEN, String nameUA) {
-        return validateNameEn(req, nameEN) && validateNameUa(req, nameUA);
-    }
+    boolean delete(int id) throws DBException;
 
     /**
      * Category name (EN) validation
-     * @param req for getting session to get/set attributes, getting parameters
      * @param nameEN entered name in English
      * @return true if validation was successful
      */
-    private static boolean validateNameEn(HttpServletRequest req, String nameEN) {
-        int errorCount = 0;
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (nameEN == null || nameEN.isEmpty()) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_en_empty"));
-            errorCount++;
-        } else if (!nameEN.matches("[a-zA-Z'\\d\\s]+")) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_en_invalid"));
-            errorCount++;
-        }
-        return errorCount == 0;
+    static boolean validateNameEn(String nameEN) {
+        return nameEN != null && !nameEN.isEmpty() && nameEN.matches("[a-zA-Z'\\d\\s]+");
     }
 
     /**
      * Category name (UA) validation
-     * @param req for getting session to get/set attributes, getting parameters
      * @param nameUA entered name in Ukrainian
      * @return true if validation was successful
      */
-    private static boolean validateNameUa(HttpServletRequest req, String nameUA) {
-        int errorCount = 0;
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (nameUA == null || nameUA.isEmpty()) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_ua_empty"));
-            errorCount++;
-        } else if (!nameUA.matches("[a-zA-Zа-щА-ЩЬьЮюЯяЇїІіЄєҐґ'\\d\\s]+")) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_ua_invalid"));
-            errorCount++;
-        }
-        return errorCount == 0;
+    static boolean validateNameUa(String nameUA) {
+        return nameUA != null && !nameUA.isEmpty() && nameUA.matches("[a-zA-Zа-щА-ЩЬьЮюЯяЇїІіЄєҐґ'\\d\\s]+");
     }
 }

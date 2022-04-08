@@ -31,36 +31,23 @@ public abstract class Service {
 
     /**
      * Getting full URL
-     * @param req for getting session to get/set attributes, getting parameters
+     * @param requestUrl received url
+     * @param requestUri received uri
      * @param uri path of page
      * @return URL link
      */
-    public static String getFullURL(HttpServletRequest req, String uri) {
-        return req.getRequestURL().toString().replace(req.getRequestURI(), uri);
+    public static String getFullURL(String requestUrl, String requestUri, String uri) {
+        return requestUrl.replace(requestUri, uri);
     }
 
     /**
      * Getting current Locale
-     * @param req for getting session to get/set attributes, getting parameters
+     * @param lang received language
      * @return current Locale
      */
-    public static Locale getLocale(HttpServletRequest req) {
-        String currLang = (String) req.getSession().getAttribute("lang");
-        String[] splCurrLang = currLang.split("_");
+    public static Locale getLocale(String lang) {
+        String[] splCurrLang = lang.split("_");
         return new Locale(splCurrLang[0], splCurrLang[1]);
-    }
-
-    /**
-     * Setting another language
-     * @param req for getting session to get/set attributes, getting parameters
-     */
-    public static void setLang(HttpServletRequest req) {
-        String lang = req.getParameter("lang");
-        if (lang != null && !lang.isEmpty()) {
-            String currLang = (String) req.getSession().getAttribute("lang");
-            if (!lang.equals(currLang))
-                req.getSession().setAttribute("lang", lang);
-        }
     }
 
     /**
@@ -106,10 +93,12 @@ public abstract class Service {
         if (paramsList.size() > 1) {
             paramsList.remove(paramsList.size() - 1);
             String[] params = paramsList.toArray(String[]::new);
-            logger.info("Redirecting to " + Service.getFullURL(req, role + path + "?" + String.join("&", params)));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    role + path + "?" + String.join("&", params)));
             resp.sendRedirect(req.getContextPath() + role + path + "?" + String.join("&", params));
         } else {
-            logger.info("Redirecting to " + Service.getFullURL(req, role + path));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    role + path));
             resp.sendRedirect(req.getContextPath() + role + path);
         }
     }
@@ -120,10 +109,9 @@ public abstract class Service {
      * @param total total items on page
      * @return count of pages
      */
-    protected int getPageCount(int itemCount, int total) {
-        int pageCount = itemCount % total == 0 ? itemCount / total
+    public int getPageCount(int itemCount, int total) {
+        return itemCount % total == 0 ? itemCount / total
                 : itemCount / total + 1;
-        return pageCount;
     }
 
     /**

@@ -34,22 +34,24 @@ public class AddCategoryServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         logger.info("Opening Add Category page (admin)");
         req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/admin/categories/addCategory.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String nameEN = req.getParameter("categoryEN");
-        String nameUA = req.getParameter("categoryUA");
+        String nameEN = req.getParameter("categoryEN").strip();
+        String nameUA = req.getParameter("categoryUA").strip();
 
         HttpSession session = req.getSession();
         saveFields(session, nameEN, nameUA);
 
         try {
             categoryService.add(req, nameEN, nameUA);
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/add-cat"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/add-cat"));
             resp.sendRedirect(req.getContextPath() + "/a/add-cat");
         } catch (ServiceException e) {
             e.printStackTrace();

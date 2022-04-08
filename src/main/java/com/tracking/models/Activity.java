@@ -2,6 +2,7 @@ package com.tracking.models;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Activity Model. Here there is defined what need to store
@@ -51,6 +52,31 @@ public class Activity {
 
     public Activity() {
 
+    }
+
+    public Activity(int id, String name, List<Integer> categories, String description, String image, int peopleCount, int creatorId, boolean byAdmin, Date createTime, boolean forDelete) {
+        this.id = id;
+        this.name = name;
+        this.categories = categories;
+        this.description = description;
+        this.image = image;
+        this.peopleCount = peopleCount;
+        this.creatorId = creatorId;
+        this.byAdmin = byAdmin;
+        this.createTime = createTime;
+        this.forDelete = forDelete;
+    }
+
+    public Activity(int id, String name, String description, String image, int peopleCount, int creatorId, boolean byAdmin, Date createTime, boolean forDelete) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.image = image;
+        this.peopleCount = peopleCount;
+        this.creatorId = creatorId;
+        this.byAdmin = byAdmin;
+        this.createTime = createTime;
+        this.forDelete = forDelete;
     }
 
     public Activity(String name, List<Integer> categories, String description, String image, int creatorId, boolean byAdmin) {
@@ -147,17 +173,16 @@ public class Activity {
         this.forDelete = forDelete;
     }
 
-    public void clear() {
-        name = null;
-        categories = null;
-        description = null;
-        image = null;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Activity activity = (Activity) o;
+        return id == activity.id && peopleCount == activity.peopleCount && creatorId == activity.creatorId && byAdmin == activity.byAdmin && forDelete == activity.forDelete && Objects.equals(name, activity.name) && Objects.equals(categories, activity.categories) && Objects.equals(description, activity.description) && Objects.equals(image, activity.image) && Objects.equals(createTime, activity.createTime);
     }
 
-//    public enum Status {
-//        WAITING,
-//        CONFIRMED,
-//        DECLINED,
-//        BY_ADMIN
-//    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, categories, description, image, peopleCount, creatorId, byAdmin, createTime, forDelete);
+    }
 }

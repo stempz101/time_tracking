@@ -7,6 +7,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
@@ -18,7 +19,7 @@ public class MysqlDAOFactory implements DAOFactory {
     private static final Logger logger = Logger.getLogger(MysqlDAOFactory.class);
 
     private static MysqlDAOFactory instance;
-    private final DataSource dataSource;
+    private DataSource dataSource;
 
     public static synchronized MysqlDAOFactory getInstance() {
         if (instance == null)
@@ -26,22 +27,33 @@ public class MysqlDAOFactory implements DAOFactory {
         return instance;
     }
 
-    /**
-     * Setting connection to the MySQL DB
-     */
     private MysqlDAOFactory() {
+
+    }
+
+    @Override
+    public synchronized Connection getConnection() throws SQLException {
         try {
             dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/time_tracking");
+            return dataSource.getConnection();
         } catch (NamingException e) {
             logger.error("jdbc/time_tracking is missing!");
             logger.error(e);
             throw new IllegalStateException("jdbc/time_tracking is missing!", e);
         }
+//        return getConnectionForTest();
     }
 
     @Override
-    public synchronized Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+    public Connection getConnectionForTest() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            logger.error(e);
+        }
+        return DriverManager
+                .getConnection("jdbc:mysql://localhost:3306/time_tracking?autoReconnect=true", "root", "root");
     }
 
     @Override

@@ -43,7 +43,8 @@ public class UserFilter implements Filter {
         try {
             User authUser = (User) session.getAttribute("authUser");
             if (authUser == null) {
-                logger.info("Redirecting to " + Service.getFullURL(request, "/login"));
+                logger.info("Redirecting to " + Service.getFullURL(request.getRequestURL().toString(), request.getRequestURI(),
+                        "/login"));
                 response.sendRedirect(request.getContextPath() + "/login");
                 return;
             }
@@ -56,7 +57,8 @@ public class UserFilter implements Filter {
                 return;
             }
             if (authUser.isAdmin()) {
-                logger.info("Redirecting to " + Service.getFullURL(request, "/a/activities"));
+                logger.info("Redirecting to " + Service.getFullURL(request.getRequestURL().toString(), request.getRequestURI(),
+                        "/a/activities"));
                 response.sendRedirect(request.getContextPath() + "/a/activities");
                 return;
             }

@@ -44,9 +44,11 @@ public class CancelRequestAddServlet extends HttpServlet {
             Request request = requestService.get(req, requestId);
             requestService.cancelAdd(req, request);
             requestService.deleteActivityImage(request.getActivity().getImage(), getServletContext().getRealPath(""));
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.getSession().setAttribute("successMessage", bundle.getString("message.req_cancelled"));
-            logger.info("Redirecting to " + Service.getFullURL(req, "/u/requests"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/u/requests"));
             resp.sendRedirect(req.getContextPath() + "/u/requests");
         } catch (ServiceException e) {
             e.printStackTrace();

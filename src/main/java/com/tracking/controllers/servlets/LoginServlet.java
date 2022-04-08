@@ -33,7 +33,8 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         logger.info("Opening Login page");
         req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(req, resp);
     }
@@ -46,7 +47,8 @@ public class LoginServlet extends HttpServlet {
         try {
             User user = loginService.authUser(req, email, password);
             if (user == null) {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/login"));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/login"));
                 resp.sendRedirect(req.getContextPath() + "/login");
                 return;
             }
@@ -54,11 +56,13 @@ public class LoginServlet extends HttpServlet {
             deleteAttributes(req);
             req.getSession().setAttribute("authUser", user);
             if (user.isAdmin()) {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/a/activities"));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/a/activities"));
                 resp.sendRedirect(req.getContextPath() + "/a/activities");
             }
             else {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/u/activities"));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/u/activities"));
                 resp.sendRedirect(req.getContextPath() + "/u/activities");
             }
         } catch (ServiceException e) {

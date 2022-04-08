@@ -39,13 +39,15 @@ public class EditActivityServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         int id = Integer.parseInt(req.getParameter("id"));
         HttpSession session = req.getSession();
 
         try {
             Activity activity = activityService.get(id);
-            List<Category> categoryList = categoriesService.getAllCategories(Service.getLocale(req)); // localize
+            List<Category> categoryList = categoriesService
+                    .getAllCategories(Service.getLocale((String) req.getSession().getAttribute("lang"))); // localize
             session.setAttribute("activity", activity);
             session.setAttribute("categoryList", categoryList);
             logger.info("Opening Edit Activity page (admin)");
@@ -58,9 +60,9 @@ public class EditActivityServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String name = req.getParameter("activityName");
+        String name = req.getParameter("activityName").strip();
         List<Integer> categoryIds = activityService.getAllCategoryIds(req);
-        String description = req.getParameter("activityDescription");
+        String description = req.getParameter("activityDescription").strip();
         Part image = req.getPart("activityImage");
         String imageName = activityService.setImageName(image);
 
@@ -71,11 +73,13 @@ public class EditActivityServlet extends HttpServlet {
         try {
             if (activityService.update(req, activity)) {
                 activityService.updateActivityImage(image, imageName, oldImage, getServletContext().getRealPath(""));
-                logger.info("Redirecting to " + Service.getFullURL(req, "/a/activities"));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/a/activities"));
                 resp.sendRedirect(req.getContextPath() + "/a/activities");
                 return;
             }
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/edit-act?id=" + activity.getId()));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/edit-act?id=" + activity.getId()));
             resp.sendRedirect(req.getContextPath() + "/a/edit-act?id=" + activity.getId());
         } catch (ServiceException e) {
             e.printStackTrace();

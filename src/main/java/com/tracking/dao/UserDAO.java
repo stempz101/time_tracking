@@ -17,42 +17,25 @@ public interface UserDAO {
 
     boolean IS_ADMIN = true;
     boolean IS_USER = false;
-    boolean IS_LAST_NAME = true;
-    boolean IS_FIRST_NAME = false;
-    boolean PASSWORD_FOR_EDIT = true;
-    boolean PASSWORD_FOR_AUTH = false;
-
-    /**
-     * Identification and authorization of user
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param email entered email
-     * @param password entered password
-     * @return user if identification and authorization was successful
-     * @throws DBException if something went wrong while executing
-     */
-    User auth(HttpServletRequest req, String email, String password) throws DBException;
 
     /**
      * Checking email for existing in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param email entered email
      * @return true if email exists
      * @throws DBException if something went wrong while executing
      */
-    boolean checkEmail(HttpServletRequest req, String email) throws DBException;
+    boolean checkEmail(String email) throws DBException;
 
     /**
      * Checking password for correctness in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param user user for checking password
      * @param password entered password
      * @return true if password is correct
      */
-    boolean checkPassword(HttpServletRequest req, User user, String password);
+    boolean checkPassword(User user, String password);
 
     /**
      * Registration (creating) user in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param lastName entered last name
      * @param firstName entered first name
      * @param email entered email
@@ -63,16 +46,15 @@ public interface UserDAO {
      * @return registered user
      * @throws DBException if something went wrong while executing
      */
-    User create(HttpServletRequest req, String lastName, String firstName, String email, String password, String confirmPassword, String image, boolean isAdmin) throws DBException;
+    User create(String lastName, String firstName, String email, String password, String confirmPassword, String image, boolean isAdmin) throws DBException;
 
     /**
      * Checking entered user for existing by email in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param email entered email
      * @return true if user with this email is exists
      * @throws DBException if something went wrong while executing
      */
-    boolean ifExists(HttpServletRequest req, String email) throws DBException;
+    boolean ifExists(String email) throws DBException;
 
     /**
      * Getting all users from DB
@@ -202,7 +184,6 @@ public interface UserDAO {
 
     /**
      * Updating user information (last name, first name, email) in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param userId id of user
      * @param lastName entered last name
      * @param firstName entered first name
@@ -210,7 +191,7 @@ public interface UserDAO {
      * @return true if user is updated, false if user didn't go through validation
      * @throws DBException if something went wrong while executing
      */
-    boolean updateProfile(HttpServletRequest req, int userId, String lastName, String firstName, String email) throws DBException;
+    boolean updateProfile(int userId, String lastName, String firstName, String email) throws DBException;
 
     /**
      * Updating user photo in DB
@@ -223,7 +204,6 @@ public interface UserDAO {
 
     /**
      * Updating user password in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param userId id of user
      * @param currentPassword entered current password
      * @param newPassword entered new password
@@ -232,163 +212,50 @@ public interface UserDAO {
      * and if password didn't go through validation
      * @throws DBException if something went wrong while executing
      */
-    boolean updatePassword(HttpServletRequest req, int userId, String currentPassword, String newPassword, String confirmPassword) throws DBException;
-
-    boolean delete(User user);
+    boolean updatePassword(int userId, String currentPassword, String newPassword, String confirmPassword) throws DBException;
 
     /**
-     * Login validation.
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param email entered email
-     * @param password entered password
-     * @return true if validation is successful
+     * Deleting user from DB
+     * @param user selected user
+     * @return true if user is deleted
+     * @throws DBException if something went wrong while executing
      */
-    static boolean validateLogin(HttpServletRequest req, String email, String password) {
-        if (validateEmail(req, email) && validatePassword(req, password, PASSWORD_FOR_AUTH))
-            return true;
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        req.getSession().setAttribute("messageError", bundle.getString("message.email_password_incorrect"));
-        return false;
-    }
-
-    /**
-     * Registration validation
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param lastName entered last name
-     * @param firstName entered first name
-     * @param email entered email
-     * @param password entered password
-     * @param confirmPassword entered confirmation of password
-     * @return true id validation is successful
-     */
-    static boolean validateRegistration(HttpServletRequest req, String lastName, String firstName, String email,
-                                        String password, String confirmPassword) {
-        return validateName(req, lastName, IS_LAST_NAME) && validateName(req, firstName, IS_FIRST_NAME) &&
-                validateEmail(req, email) && validatePassword(req, password, PASSWORD_FOR_AUTH) && confirmPassword(req, password, confirmPassword);
-    }
-
-    /**
-     * Profile (User) information validation
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param lastName entered last name
-     * @param firstName entered first name
-     * @param email entered email
-     * @return true if validation is successful
-     */
-    static boolean validateEditProfile(HttpServletRequest req, String lastName, String firstName, String email) {
-        return validateName(req, lastName, IS_LAST_NAME) && validateName(req, firstName, IS_FIRST_NAME) && validateEmail(req, email);
-    }
-
-    /**
-     * Updating password validation
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param newPassword entered new password
-     * @param confirmPassword entered confirmation of new password
-     * @return true if validation is successful
-     */
-    static boolean validateEditPassword(HttpServletRequest req, String newPassword, String confirmPassword) {
-        return validatePassword(req, newPassword, PASSWORD_FOR_EDIT) &&
-                confirmPassword(req, newPassword, confirmPassword);
-    }
+    boolean delete(User user) throws DBException;
 
     /**
      * Password validation
-     * @param req for getting session to get/set attributes, getting parameters
      * @param password entered password
-     * @param for_ true if password for editing, false if it's for authorization
      * @return true if validation is successful
      */
-    static boolean validatePassword(HttpServletRequest req, String password, boolean for_) {
-        HttpSession session = req.getSession();
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        int errorCount = 0;
-        if (password == null || password.isEmpty()) {
-            if (for_) {
-                session.setAttribute("messageError", bundle.getString("message.new_password_empty"));
-            } else {
-                session.setAttribute("messageError", bundle.getString("message.password_empty"));
-            }
-            errorCount++;
-        } else if (!password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
-            if (for_) {
-                session.setAttribute("messageError", bundle.getString("message.new_password_invalid"));
-            } else {
-                session.setAttribute("messageError", bundle.getString("message.password_invalid"));
-            }
-            errorCount++;
-        }
-
-        return errorCount == 0;
+    static boolean validatePassword(String password) {
+        return password != null && !password.isEmpty() && password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
     }
 
     /**
      * Checking confirmation of entered password
-     * @param req for getting session to get/set attributes, getting parameters
      * @param password entered password
      * @param confirmPassword entered confirmation of password
      * @return true if password confirmed
      */
-    static boolean confirmPassword(HttpServletRequest req, String password, String confirmPassword) {
-        HttpSession session = req.getSession();
-        int errorCount = 0;
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (confirmPassword == null || confirmPassword.isEmpty()) {
-            session.setAttribute("messageError", bundle.getString("message.confirm_password"));
-            errorCount++;
-        } else if (!confirmPassword.equals(password)) {
-            session.setAttribute("messageError", bundle.getString("message.confirm_password_failed"));
-            errorCount++;
-        }
-
-        return errorCount == 0;
+    static boolean confirmPassword(String password, String confirmPassword) {
+        return confirmPassword != null && !confirmPassword.isEmpty() && confirmPassword.equals(password);
     }
 
     /**
      * Name validation
-     * @param req for getting session to get/set attributes, getting parameters
      * @param name entered name
-     * @param is true if it's last name, false if it's first name
      * @return true if validation was successful
      */
-    private static boolean validateName(HttpServletRequest req, String name, boolean is) {
-        HttpSession session = req.getSession();
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (name == null || name.isEmpty()) {
-            if (is) {
-                session.setAttribute("messageError", bundle.getString("message.last_name_empty"));
-            } else {
-                session.setAttribute("messageError", bundle.getString("message.first_name_empty"));
-            }
-            return false;
-        } else if (!name.matches("[A-Za-z'\\s]+|[а-яА-ЯЇїІіЄєҐґ'\\s]+")) {
-            if (is) {
-                session.setAttribute("messageError", bundle.getString("message.last_name_invalid"));
-            } else {
-                session.setAttribute("messageError", bundle.getString("message.first_name_invalid"));
-            }
-            return false;
-        }
-        return true;
+    static boolean validateName(String name) {
+        return name != null && !name.isEmpty() && name.matches("[A-Za-z'\\s]+|[а-яА-ЯЇїІіЄєҐґ'\\s]+");
     }
 
     /**
      * Email validation
-     * @param req for getting session to get/set attributes, getting parameters
      * @param email entered email
      * @return true if validation is successful
      */
-    private static boolean validateEmail(HttpServletRequest req, String email) {
-        HttpSession session = req.getSession();
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        int errorCount = 0;
-        if (email == null || email.isEmpty()) {
-            session.setAttribute("messageError", bundle.getString("message.email_empty"));
-            errorCount++;
-        } else if (!email.matches("^[\\w\\-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-            session.setAttribute("messageError", bundle.getString("message.email_invalid"));
-            errorCount++;
-        }
-
-        return errorCount == 0;
+    static boolean validateEmail(String email) {
+        return email != null && !email.isEmpty() && email.matches("^[\\w\\-.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
     }
 }

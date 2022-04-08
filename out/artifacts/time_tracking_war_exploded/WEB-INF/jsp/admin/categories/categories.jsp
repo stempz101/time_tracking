@@ -103,9 +103,9 @@
                 <form action="<%= request.getContextPath() + "/a/categories" %>"
                       class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
                       method="get">
-                    <select class="form-select w-25" aria-label="Lang" name="lang" id="lang">
+                    <select class="form-select w-25" aria-label="Lang" name="s_lang" id="lang">
                         <c:choose>
-                            <c:when test="${param.lang.equals('en')}">
+                            <c:when test="${param.s_lang.equals('en')}">
                                 <option value="en" selected>EN</option>
                             </c:when>
                             <c:otherwise>
@@ -113,11 +113,11 @@
                             </c:otherwise>
                         </c:choose>
                         <c:choose>
-                            <c:when test="${param.lang.equals('ua')}">
-                                <option value="ua" selected>UA</option>
+                            <c:when test="${param.s_lang.equals('uk')}">
+                                <option value="uk" selected>UA</option>
                             </c:when>
                             <c:otherwise>
-                                <option value="ua">UA</option>
+                                <option value="uk">UA</option>
                             </c:otherwise>
                         </c:choose>
                     </select>
@@ -130,8 +130,8 @@
                 <form action="<%=request.getContextPath() + "/a/categories"%>"
                       class="d-flex col-12 col-lg-auto mx-0 mb-2 justify-content-center align-items-center"
                       method="get">
-                    <c:if test="${param.lang != null && not empty param.lang}">
-                        <input type="hidden" name="lang" value="${param.lang}">
+                    <c:if test="${param.s_lang != null && not empty param.s_lang}">
+                        <input type="hidden" name="s_lang" value="${param.s_lang}">
                     </c:if>
                     <c:if test="${param.name != null && not empty param.name}">
                         <input type="hidden" name="name" value="${param.name}">

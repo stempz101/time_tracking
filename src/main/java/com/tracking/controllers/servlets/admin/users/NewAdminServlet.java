@@ -39,16 +39,17 @@ public class NewAdminServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         logger.info("Opening New Admin page (admin)");
         req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/admin/users/newAdmin.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String lastName = req.getParameter("last_name");
-        String firstName = req.getParameter("first_name");
-        String email = req.getParameter("email");
+        String lastName = req.getParameter("last_name").strip();
+        String firstName = req.getParameter("first_name").strip();
+        String email = req.getParameter("email").strip();
         String password = req.getParameter("password");
         String confirmPassword = req.getParameter("confirmPassword");
         Part image = req.getPart("image");
@@ -57,15 +58,18 @@ public class NewAdminServlet extends HttpServlet {
         try {
             User user = registerService.registerAdmin(req, lastName, firstName, email, password, confirmPassword, imageName);
             if (user == null) {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/a/new-adm"));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/a/new-adm"));
                 resp.sendRedirect(req.getContextPath() + "/a/new-adm");
                 return;
             }
 
             registerService.saveUserImage(image, user.getImage(), getServletContext().getRealPath(""));
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.getSession().setAttribute("successMessage", bundle.getString("message.admin_created"));
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/new-adm"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/new-adm"));
             resp.sendRedirect(req.getContextPath() + "/a/new-adm");
         } catch (ServiceException e) {
             e.printStackTrace();

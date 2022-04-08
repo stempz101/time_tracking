@@ -75,14 +75,15 @@ public class CategoriesService extends Service {
             int categoryCount;
             String sort = req.getParameter("sort");
             String order = req.getParameter("order");
-            Locale locale = Service.getLocale(req);
+            Locale locale = Service.getLocale((String) req.getSession().getAttribute("lang"));
+            String searchLang = req.getParameter("s_lang");
             if (order == null || order.isEmpty())
                 order = "asc";
             if (req.getParameter("name") != null) {
                 String name = req.getParameter("name");
                 req.setAttribute("name", name);
-                categoryCount = categoryDAO.getCountWhereName(name, locale);
-                categoryList = categoryDAO.getAllWhereName(name, locale, sort, order, start, TOTAL_CATEGORIES); // add localize
+                categoryCount = categoryDAO.getCountWhereName(name, searchLang);
+                categoryList = categoryDAO.getAllWhereName(searchLang, name, sort, order, start, TOTAL_CATEGORIES); // add localize
             } else {
                 categoryCount = categoryDAO.getCount();
                 categoryList = categoryDAO.getAll(locale, sort, order, start, TOTAL_CATEGORIES); // add localize

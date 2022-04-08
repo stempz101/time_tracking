@@ -39,7 +39,8 @@ public class DeleteCategoryServlet extends HttpServlet {
 
         try {
             categoryService.delete(req, categoryId);
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/categories"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/categories"));
             resp.sendRedirect(req.getContextPath() + "/a/categories");
         } catch (ServiceException e) {
             e.printStackTrace();

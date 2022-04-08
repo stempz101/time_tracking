@@ -163,7 +163,6 @@
 </section>
 
 <%
-    session.removeAttribute("activity");
     session.removeAttribute("successMessage");
     session.removeAttribute("messageError");
 %>

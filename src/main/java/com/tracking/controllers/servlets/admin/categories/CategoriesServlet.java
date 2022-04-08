@@ -33,7 +33,8 @@ public class CategoriesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            Service.setLang(req);
+            if (req.getParameter("lang") != null)
+                req.getSession().setAttribute("lang", req.getParameter("lang"));
             if (!categoriesService.processCategories(req, resp))
                 return;
             categoriesService.setQueryStringForPagination(req);

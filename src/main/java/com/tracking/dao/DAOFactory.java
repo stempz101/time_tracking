@@ -30,6 +30,13 @@ public interface DAOFactory {
     Connection getConnection() throws SQLException;
 
     /**
+     * Getting connection of DB for testing
+     * @return connection of DB
+     * @throws SQLException if something went wrong with connection
+     */
+    Connection getConnectionForTest() throws SQLException;
+
+    /**
      * Transaction rollback
      * @param con connection of DB
      */

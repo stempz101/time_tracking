@@ -40,10 +40,12 @@ public class AddUserServlet extends HttpServlet {
 
             User authUser = (User) req.getSession().getAttribute("authUser");
             if (authUser.isAdmin()) {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/a/activity?id=" + activityId));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/a/activity?id=" + activityId));
                 resp.sendRedirect(req.getContextPath() + "/a/activity?id=" + activityId);
             } else {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/u/activity?id=" + activityId));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/u/activity?id=" + activityId));
                 resp.sendRedirect(req.getContextPath() + "/u/activity?id=" + activityId);
             }
         } catch (ServiceException e) {

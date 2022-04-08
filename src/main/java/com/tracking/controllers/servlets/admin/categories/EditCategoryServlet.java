@@ -34,7 +34,8 @@ public class EditCategoryServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         int categoryId = Integer.parseInt(req.getParameter("id"));
         Category category = null;
         try {
@@ -53,8 +54,8 @@ public class EditCategoryServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String nameEN = req.getParameter("categoryEN");
-        String nameUA = req.getParameter("categoryUA");
+        String nameEN = req.getParameter("categoryEN").strip();
+        String nameUA = req.getParameter("categoryUA").strip();
 
         HttpSession session = req.getSession();
         saveFields(session, nameEN, nameUA);
@@ -63,11 +64,13 @@ public class EditCategoryServlet extends HttpServlet {
             Category category = (Category) session.getAttribute("category");
             boolean result = categoryService.update(req, nameEN, nameUA);
             if (result) {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/a/categories"));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/a/categories"));
                 resp.sendRedirect(req.getContextPath() + "/a/categories");
                 return;
             }
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/edit-cat?id=" + category.getId()));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/edit-cat?id=" + category.getId()));
             resp.sendRedirect(req.getContextPath() + "/a/edit-cat?id=" + category.getId());
         } catch (ServiceException e) {
             e.printStackTrace();

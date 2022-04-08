@@ -40,59 +40,25 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public boolean create(HttpServletRequest req, String nameEN, String nameUA) throws DBException {
-
-        if (!CategoryDAO.validateCategory(req, nameEN, nameUA)) {
-            logger.error("Validation error occurred (nameEN, nameUA): " + req.getSession().getAttribute("messageError"));
-            return false;
-        }
-
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (ifExists(req, nameEN, Language.EN)) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_en_exists"));
-            logger.error(req.getSession().getAttribute("messageError"));
-            return false;
-        }
-        if (ifExists(req, nameUA, Language.UA)) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_ua_exists"));
-            logger.error(req.getSession().getAttribute("messageError"));
-            return false;
-        }
-
+    public Category create(String nameEN, String nameUA) throws DBException {
         try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(INSERT_CATEGORY)) {
+             PreparedStatement prst = con.prepareStatement(INSERT_CATEGORY, Statement.RETURN_GENERATED_KEYS)) {
             int c = 0;
             prst.setString(++c, nameEN);
             prst.setString(++c, nameUA);
             prst.execute();
+            Category category = new Category(nameEN, nameUA);
+            try (ResultSet rs = prst.getGeneratedKeys()) {
+                if (rs.next())
+                    category.setId(rs.getInt(1));
+            }
             logger.info("Category creating was successful");
-            req.getSession().removeAttribute("categoryEN");
-            req.getSession().removeAttribute("categoryUA");
-            req.getSession().setAttribute("successMessage", bundle.getString("message.category_created"));
-            return true;
+            return category;
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);
             throw new DBException("MysqlCategoryDAO: create was failed.", e);
         }
-    }
-
-    @Override
-    public boolean ifExists(HttpServletRequest req, String name, Language language) throws DBException {
-        if (req.getSession().getAttribute("category") != null) {
-            Category category = (Category) req.getSession().getAttribute("category");
-            Category otherCategory = getByNameOther(category.getId(), name, language);
-            return otherCategory != null;
-        }
-        Category category = null;
-        try {
-            category = getByName(name, language);
-        } catch (DBException e) {
-            e.printStackTrace();
-            logger.error(e);
-            throw new DBException("MysqlCategoryDAO: ifExists was failed.", e);
-        }
-        return category != null;
     }
 
     @Override
@@ -141,22 +107,26 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public List<Category> getAllWhereName(String name, Locale locale, String sort,
+    public List<Category> getAllWhereName(String searchLang, String name, String sort,
                                           String order, int start, int total) throws DBException {
-        String orderBy, query = SELECT_CATEGORIES_LIKE_EN_LIMIT;
+        String orderBy, query;
+        if (searchLang.equals(Language.UA.getValue()))
+            query = SELECT_CATEGORIES_LIKE_UA_LIMIT;
+        else
+            query = SELECT_CATEGORIES_LIKE_EN_LIMIT;
         if (sort != null && !sort.isEmpty()) {
             orderBy = sort + " " + order;
-            if (locale.getLanguage().equals(Language.UA.getValue()))
+            if (searchLang.equals(Language.UA.getValue()))
                 query = SELECT_CATEGORIES_LIKE_UA_ORDER_LIMIT.replace(ORDER_BY, orderBy);
             else
                 query = SELECT_CATEGORIES_LIKE_EN_ORDER_LIMIT.replace(ORDER_BY, orderBy);
         } else if (order.equals("desc")){
-            if (locale.getLanguage().equals(Language.UA.getValue()))
+            if (searchLang.equals(Language.UA.getValue()))
                 query = SELECT_CATEGORIES_LIKE_UA_REVERSE_LIMIT;
             else
                 query = SELECT_CATEGORIES_LIKE_EN_REVERSE_LIMIT;
         } else {
-            if (locale.getLanguage().equals(Language.UA.getValue()))
+            if (searchLang.equals(Language.UA.getValue()))
                 query = SELECT_CATEGORIES_LIKE_UA_LIMIT;
         }
 
@@ -290,6 +260,7 @@ public class MysqlCategoryDAO implements CategoryDAO {
         }
     }
 
+    @Override
     public Category getByNameOther(int id, String name, Language language) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
@@ -338,12 +309,12 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public int getCountWhereName(String name, Locale locale) throws DBException {
+    public int getCountWhereName(String name, String lang) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
             con = factory.getConnection();
-            if (locale.getLanguage().equals(Language.UA.getValue()))
+            if (lang.equals(Language.UA.getValue()))
                 prst = con.prepareStatement(GET_CATEGORIES_LIKE_UA_COUNT);
             else
                 prst = con.prepareStatement(GET_CATEGORIES_LIKE_EN_COUNT);
@@ -366,37 +337,15 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public boolean update(HttpServletRequest req, String nameEN, String nameUA) throws DBException {
-        if (!CategoryDAO.validateCategory(req, nameEN, nameUA)) {
-            logger.error("Validation error occurred (nameEN, nameUA): " + req.getSession().getAttribute("messageError"));
-            return false;
-        }
-
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (ifExists(req, nameEN, Language.EN)) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_en_exists"));
-            logger.error(req.getSession().getAttribute("messageError"));
-            return true;
-        }
-        if (ifExists(req, nameUA, Language.UA)) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.category_ua_exists"));
-            logger.error(req.getSession().getAttribute("messageError"));
-            return true;
-        }
-
+    public boolean update(int categoryId, String nameEN, String nameUA) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(UPDATE_CATEGORY)) {
-            Category category = (Category) req.getSession().getAttribute("category");
             int c = 0;
             prst.setString(++c, nameEN);
             prst.setString(++c, nameUA);
-            prst.setInt(++c, category.getId());
+            prst.setInt(++c, categoryId);
             prst.executeUpdate();
-            logger.info("Category (id=" + category.getId() + ") was successfully updated");
-            req.getSession().removeAttribute("categoryEN");
-            req.getSession().removeAttribute("categoryUA");
-            req.getSession().removeAttribute("category");
-            req.getSession().setAttribute("successMessage", bundle.getString("message.category_updated"));
+            logger.info("Category (id=" + categoryId + ") was successfully updated");
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -406,14 +355,13 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public void delete(HttpServletRequest req, int id) throws DBException {
+    public boolean delete(int id) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(DELETE_CATEGORY)) {
             prst.setInt(1, id);
             prst.execute();
             logger.info("Category (id=" + id + ") was successfully deleted");
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-            req.getSession().setAttribute("successMessage", bundle.getString("message.category_deleted"));
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);

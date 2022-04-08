@@ -40,12 +40,7 @@ public class MysqlRequestDAO implements RequestDAO {
     }
 
     @Override
-    public boolean create(HttpServletRequest req, Activity activity, boolean forDelete) throws DBException {
-
-        if (!ActivityDAO.validateActivity(req, activity)){
-            logger.error("Validation error occurred (name, description): " + req.getSession().getAttribute("messageError"));
-            return false;
-        }
+    public Request create(Activity activity, boolean forDelete) throws DBException {
 
         Connection con = null;
         try {
@@ -54,23 +49,35 @@ public class MysqlRequestDAO implements RequestDAO {
             if (!forDelete)
                 createActivity(con, activity);
 
-            try (PreparedStatement prst = con.prepareStatement(INSERT_REQUEST)) {
+            Request request = null;
+            try (PreparedStatement prst = con.prepareStatement(INSERT_REQUEST, Statement.RETURN_GENERATED_KEYS)) {
                 int c = 0;
                 prst.setInt(++c, activity.getId());
-                if (forDelete)
+                if (forDelete) {
                     prst.setBoolean(++c, forDelete);
-                else
+                    prst.execute();
+                    try (ResultSet rs = prst.getGeneratedKeys()) {
+                        if (rs.next())
+                            request = new Request(rs.getInt(1), activity.getId(), Request.Status.WAITING,
+                                    true, activity);
+                    }
+                } else {
                     prst.setNull(++c, Types.NULL);
-                prst.execute();
+                    prst.execute();
+                    try (ResultSet rs = prst.getGeneratedKeys()) {
+                        if (rs.next())
+                            request = new Request(rs.getInt(1), Request.Status.WAITING,
+                                    false, activity);
+                    }
+                }
                 if (forDelete)
                     logger.info("Request for remove was created successfully");
                 else
                     logger.info("Request for add was created successfully");
             }
 
-            req.getSession().removeAttribute("activity");
             con.commit();
-            return true;
+            return request;
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);
@@ -273,7 +280,7 @@ public class MysqlRequestDAO implements RequestDAO {
     }
 
     @Override
-    public void delete(int requestId, User authUser) throws DBException {
+    public boolean delete(int requestId, User authUser) throws DBException {
         String query = authUser.isAdmin() ? DELETE_REQUEST : DELETE_USER_REQUEST;
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(query)) {
@@ -283,6 +290,7 @@ public class MysqlRequestDAO implements RequestDAO {
                 prst.setInt(++c, authUser.getId());
             prst.execute();
             logger.info("Request (id=" + requestId + ") was removed successfully");
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);

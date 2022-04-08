@@ -52,12 +52,34 @@ public class User {
 
     }
 
+    public User(int id, String lastName, String firstName, String email, String password, String image, int activityCount, long spentTime, boolean isAdmin, boolean isBlocked) {
+        this.id = id;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.email = email;
+        this.password = password;
+        this.image = image;
+        this.activityCount = activityCount;
+        this.spentTime = Math.round((double) spentTime / 3600.0 * 10.0) / 10.0;
+        this.isAdmin = isAdmin;
+        this.isBlocked = isBlocked;
+    }
+
     public User(String lastName, String firstName, String email, String password, String image) {
         this.lastName = lastName;
         this.firstName = firstName;
         this.email = email;
         this.password = password;
         this.image = image;
+    }
+
+    public User(int id, String lastName, String firstName, String image, boolean isAdmin, boolean isBlocked) {
+        this.id = id;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.image = image;
+        this.isAdmin = isAdmin;
+        this.isBlocked = isBlocked;
     }
 
     public User(int id, String lastName, String firstName, String image) {
@@ -146,5 +168,18 @@ public class User {
 
     public void setBlocked(boolean blocked) {
         isBlocked = blocked;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && activityCount == user.activityCount && Double.compare(user.spentTime, spentTime) == 0 && isAdmin == user.isAdmin && isBlocked == user.isBlocked && Objects.equals(lastName, user.lastName) && Objects.equals(firstName, user.firstName) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(image, user.image);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, lastName, firstName, email, password, image, activityCount, spentTime, isAdmin, isBlocked);
     }
 }

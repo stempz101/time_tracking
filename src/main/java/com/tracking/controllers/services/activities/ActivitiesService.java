@@ -85,7 +85,7 @@ public class ActivitiesService extends Service {
 
             int activityCount;
 //            Locale locale = Service.getLocale(req);
-            categoryList = categoriesService.getAllCategories(Service.getLocale(req));
+            categoryList = categoriesService.getAllCategories(Service.getLocale((String) req.getSession().getAttribute("lang")));
             categoryList.add(new Category(0, "Other", "Інше"));
 
             String sort = req.getParameter("sort");

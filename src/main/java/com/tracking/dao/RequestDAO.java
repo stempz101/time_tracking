@@ -16,13 +16,12 @@ public interface RequestDAO {
 
     /**
      * Creates request in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param activity activity for request
      * @param forDelete true if request for delete
-     * @return true if request is created, false if activity didn't go through validation
+     * @return created request
      * @throws DBException if something went wrong while executing
      */
-    boolean create(HttpServletRequest req, Activity activity, boolean forDelete) throws DBException;
+    Request create(Activity activity, boolean forDelete) throws DBException;
 
     /**
      * Getting all requests from DB
@@ -91,8 +90,9 @@ public interface RequestDAO {
      * Deleting request from DB
      * @param requestId id of request
      * @param authUser authorized user
+     * @return true if request is deleted
      * @throws DBException if something went wrong while executing
      */
-    void delete(int requestId, User authUser) throws DBException;
+    boolean delete(int requestId, User authUser) throws DBException;
 
 }

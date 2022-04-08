@@ -34,7 +34,8 @@ public class EditPasswordServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         logger.info("Opening Edit Password page");
         req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/profile/editPassword.jsp").forward(req, resp);
     }
@@ -49,11 +50,13 @@ public class EditPasswordServlet extends HttpServlet {
             User authUser = (User) req.getSession().getAttribute("authUser");
             String role = authUser.isAdmin() ? "/a" : "/u";
             if (profileService.editPassword(req, authUser.getId(), currentPassword, newPassword, confirmPassword)) {
-                logger.info("Redirecting to " + Service.getFullURL(req, role + "/profile?id=" + authUser.getId()));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        role + "/profile?id=" + authUser.getId()));
                 resp.sendRedirect(req.getContextPath() + role + "/profile?id=" + authUser.getId());
                 return;
             }
-            logger.info("Redirecting to " + Service.getFullURL(req, role + "/edit-pass"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    role + "/edit-pass"));
             resp.sendRedirect(req.getContextPath() + role + "/edit-pass");
         } catch (ServiceException e) {
             e.printStackTrace();

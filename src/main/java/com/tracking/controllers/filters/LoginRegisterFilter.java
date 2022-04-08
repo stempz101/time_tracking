@@ -28,11 +28,13 @@ public class LoginRegisterFilter implements Filter {
         User user = (User) session.getAttribute("authUser");
         if (user != null) {
             if (user.isAdmin()) {
-                logger.info("Redirecting to " + Service.getFullURL(request, "/a/activities"));
+                logger.info("Redirecting to " + Service.getFullURL(request.getRequestURL().toString(), request.getRequestURI(),
+                        "/a/activities"));
                 response.sendRedirect(request.getContextPath() + "/a/activities");
                 return;
             }
-            logger.info("Redirecting to " + Service.getFullURL(request, "/u/activities"));
+            logger.info("Redirecting to " + Service.getFullURL(request.getRequestURL().toString(), request.getRequestURI(),
+                    "/u/activities"));
             response.sendRedirect(request.getContextPath() + "/u/activities");
             return;
         }

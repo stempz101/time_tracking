@@ -255,7 +255,7 @@
             <div class="row">
                 <c:if test="${sessionScope.authUser.admin || sessionScope.authUser.id == requestScope.user.id}">
                     <div class="form-group col-12">
-                        <p class="h5"><b><fmt:message key="email" bundle="${myBundle}" />: </b><c:out value="${sessionScope.authUser.email}" /></p>
+                        <p class="h5"><b><fmt:message key="email" bundle="${myBundle}" />: </b><c:out value="${requestScope.user.email}" /></p>
                     </div>
                 </c:if>
                 <c:choose>

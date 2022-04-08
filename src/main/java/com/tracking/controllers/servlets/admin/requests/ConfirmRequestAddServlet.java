@@ -43,9 +43,11 @@ public class ConfirmRequestAddServlet extends HttpServlet {
 
         try {
             requestService.confirmAdd(requestId, activityId, creatorId);
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.setAttribute("successMessage", bundle.getString("message.req_confirmed"));
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/requests"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/requests"));
             resp.sendRedirect(req.getContextPath() + "/a/requests");
         } catch (ServiceException e) {
             e.printStackTrace();

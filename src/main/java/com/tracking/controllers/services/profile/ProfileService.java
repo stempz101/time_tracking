@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Service, that contains all actions with profile
@@ -120,11 +121,25 @@ public class ProfileService extends Service {
      */
     public boolean editProfile(HttpServletRequest req, int userId, String lastName, String firstName,
                             String email) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        UserDAO userDAO = factory.getUserDao();
-
         try {
-            return userDAO.updateProfile(req, userId, lastName, firstName, email);
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
+            if (!UserDAO.validateName(lastName)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.last_name_error"));
+                return false;
+            }
+            if (!UserDAO.validateName(firstName)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.first_name_error"));
+                return false;
+            }
+            if (!UserDAO.validateEmail(email)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.email_error"));
+                return false;
+            }
+
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            UserDAO userDAO = factory.getUserDao();
+            return userDAO.updateProfile(userId, lastName, firstName, email);
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
@@ -142,10 +157,10 @@ public class ProfileService extends Service {
      * @throws ServiceException if something went wrong while executing
      */
     public boolean editPhoto(User authUser, Part image, String imageName, String realPath) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        UserDAO userDAO = factory.getUserDao();
-
         try {
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            UserDAO userDAO = factory.getUserDao();
+
             if (userDAO.updatePhoto(authUser.getId(), imageName)) {
                 updateUserImage(image, imageName, authUser.getImage(), realPath);
                 return true;
@@ -170,11 +185,27 @@ public class ProfileService extends Service {
      */
     public boolean editPassword(HttpServletRequest req, int userId, String currentPassword,
                                 String newPassword, String confirmPassword) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        UserDAO userDAO = factory.getUserDao();
-
         try {
-            return userDAO.updatePassword(req, userId, currentPassword, newPassword, confirmPassword);
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            UserDAO userDAO = factory.getUserDao();
+
+            User authUser = userDAO.getById(userId);
+            if (userDAO.checkPassword(authUser, currentPassword)) {
+                if (!UserDAO.validatePassword(newPassword)) {
+                    req.getSession().setAttribute("messageError", bundle.getString("message.new_password_error"));
+                    return false;
+                }
+                if (!UserDAO.confirmPassword(newPassword, confirmPassword)) {
+                    req.getSession().setAttribute("messageError", bundle.getString("message.confirm_password_error"));
+                    return false;
+                }
+
+                return userDAO.updatePassword(userId, currentPassword, newPassword, confirmPassword);
+            }
+            req.getSession().setAttribute("messageError", bundle.getString("message.password_incorrect"));
+            return false;
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);

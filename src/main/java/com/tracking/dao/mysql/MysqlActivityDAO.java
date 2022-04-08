@@ -39,13 +39,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public boolean create(HttpServletRequest req, Activity activity) throws DBException {
-
-        if (!ActivityDAO.validateActivity(req, activity)) {
-            logger.error("Validation error occurred (name, description): " + req.getSession().getAttribute("messageError"));
-            return false;
-        }
-
+    public Activity create(Activity activity) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -61,12 +55,11 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.execute();
             int activityId = getInsertedActivityId(prst);
             setActivityCategories(con, activity.getCategories(), activityId);
+            Activity createdActivity = activity;
+            createdActivity.setId(activityId);
             logger.info("Activity creating was successfull");
-            req.getSession().removeAttribute("activity");
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-            req.getSession().setAttribute("successMessage", bundle.getString("message.activity_created"));
             con.commit();
-            return true;
+            return createdActivity;
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);
@@ -137,8 +130,11 @@ public class MysqlActivityDAO implements ActivityDAO {
         String orderBy, query;
         if (sort != null && !sort.isEmpty()) {
             orderBy = sort + " " + order;
-            if (sort.equals("create_time") || sort.equals("people_count"))
+            if (sort.equals("create_time") || sort.equals("people_count")) {
+                if (sort.equals("create_time"))
+                    sort = "activities." + sort;
                 orderBy = sort + " " + order + ", name";
+            }
             query = authUser.isAdmin() ? SELECT_ACTIVITIES_LIKE_ORDER.replace(ORDER_BY, orderBy) :
                     SELECT_USER_ACTIVITIES_LIKE_ORDER.replace(ORDER_BY, orderBy);
         } else if (order.equals("desc")){
@@ -186,8 +182,11 @@ public class MysqlActivityDAO implements ActivityDAO {
         String orderBy, query;
         if (sort != null && !sort.isEmpty()) {
             orderBy = sort + " " + order;
-            if (sort.equals("create_time") || sort.equals("people_count"))
+            if (sort.equals("create_time") || sort.equals("people_count")) {
+                if (sort.equals("create_time"))
+                    sort = "activities." + sort;
                 orderBy = sort + " " + order + ", name";
+            }
             query = authUser.isAdmin() ? SELECT_ACTIVITIES_WHERE_CATEGORY_ORDER.replace(ORDER_BY, orderBy) :
                     SELECT_USER_ACTIVITIES_WHERE_CATEGORY_ORDER.replace(ORDER_BY, orderBy);
         } else if (order.equals("desc")){
@@ -238,8 +237,11 @@ public class MysqlActivityDAO implements ActivityDAO {
         String orderBy, query;
         if (sort != null && !sort.isEmpty()) {
             orderBy = sort + " " + order;
-            if (sort.equals("create_time") || sort.equals("people_count"))
+            if (sort.equals("create_time") || sort.equals("people_count")) {
+                if (sort.equals("create_time"))
+                    sort = "activities." + sort;
                 orderBy = sort + " " + order + ", name";
+            }
             query = authUser.isAdmin() ? SELECT_ACTIVITIES_WHERE_CATEGORY_IS_NULL_ORDER.replace(ORDER_BY, orderBy) :
                     SELECT_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL_ORDER.replace(ORDER_BY, orderBy);
         } else if (order.equals("desc")){
@@ -288,8 +290,11 @@ public class MysqlActivityDAO implements ActivityDAO {
         String orderBy, query;
         if (sort != null && !sort.isEmpty()) {
             orderBy = sort + " " + order;
-            if (sort.equals("create_time") || sort.equals("people_count"))
+            if (sort.equals("create_time") || sort.equals("people_count")) {
+                if (sort.equals("create_time"))
+                    sort = "activities." + sort;
                 orderBy = sort + " " + order + ", name";
+            }
             query = authUser.isAdmin() ? SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_ORDER.replace(ORDER_BY, orderBy) :
                     SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_ORDER.replace(ORDER_BY, orderBy);
         } else if (order.equals("desc")){
@@ -342,8 +347,11 @@ public class MysqlActivityDAO implements ActivityDAO {
         String orderBy, query;
         if (sort != null && !sort.isEmpty()) {
             orderBy = sort + " " + order;
-            if (sort.equals("create_time") || sort.equals("people_count"))
+            if (sort.equals("create_time") || sort.equals("people_count")) {
+                if (sort.equals("create_time"))
+                    sort = "activities." + sort;
                 orderBy = sort + " " + order + ", name";
+            }
             query = authUser.isAdmin() ? SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_ORDER.replace(ORDER_BY, orderBy) :
                     SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_ORDER.replace(ORDER_BY, orderBy);
         } else if (order.equals("desc")){
@@ -876,11 +884,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public boolean update(HttpServletRequest req, Activity activity) throws DBException {
-        if (!ActivityDAO.validateActivity(req, activity)) {
-            return false;
-        }
-
+    public boolean update(Activity activity) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -895,9 +899,6 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.executeUpdate();
             logger.info("Activity (id=" + activity.getId() + ") information was updated");
             updateActivityCategories(con, activity.getCategories(), activity.getId());
-            req.getSession().removeAttribute("activity");
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-            req.getSession().setAttribute("successMessage", bundle.getString("message.activity_updated"));
             con.commit();
             return true;
         } catch (SQLException e) {
@@ -912,7 +913,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public void delete(int activityId) throws DBException {
+    public boolean delete(int activityId) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -944,6 +945,7 @@ public class MysqlActivityDAO implements ActivityDAO {
             }
             logger.info("Activity count of earlier participating users was updated");
             con.commit();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);

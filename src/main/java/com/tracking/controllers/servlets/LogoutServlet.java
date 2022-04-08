@@ -29,7 +29,8 @@ public class LogoutServlet extends HttpServlet {
         HttpSession session = req.getSession();
         logger.info("Removing values from session");
         session.removeAttribute("authUser");
-        logger.info("Redirecting to " + Service.getFullURL(req, "/login"));
+        logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                "/login"));
         resp.sendRedirect(req.getContextPath() + "/login");
     }
 }

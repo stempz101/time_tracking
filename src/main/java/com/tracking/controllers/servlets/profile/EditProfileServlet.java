@@ -31,26 +31,29 @@ public class EditProfileServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         logger.info("Opening Edit Profile page");
         req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/profile/editProfile.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String lastName = req.getParameter("last_name");
-        String firstName = req.getParameter("first_name");
-        String email = req.getParameter("email");
+        String lastName = req.getParameter("last_name").strip();
+        String firstName = req.getParameter("first_name").strip();
+        String email = req.getParameter("email").strip();
 
         try {
             User authUser = (User) req.getSession().getAttribute("authUser");
             String role = authUser.isAdmin() ? "/a" : "/u";
             if (profileService.editProfile(req, authUser.getId(), lastName, firstName, email)) {
-                logger.info("Redirecting to " + Service.getFullURL(req, role + "/profile?id=" + authUser.getId()));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        role + "/profile?id=" + authUser.getId()));
                 resp.sendRedirect(req.getContextPath() + role + "/profile?id=" + authUser.getId());
                 return;
             }
-            logger.info("Redirecting to " + Service.getFullURL(req, role + "/edit-prof"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    role + "/edit-prof"));
             resp.sendRedirect(req.getContextPath() + role + "/edit-prof");
         } catch (ServiceException e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package com.tracking.models;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * UserActivity Model. Here there is defined what need to store
@@ -50,6 +51,29 @@ public class UserActivity {
      * Status of user in activity
      */
     private Status status;
+
+    public UserActivity() {
+
+    }
+
+    public UserActivity(int userId, String userLastName, String userFirstName, String userImage, boolean isAdmin, Date startTime, Date stopTime, long spentTime, Status status) {
+        this.userId = userId;
+        this.userLastName = userLastName;
+        this.userFirstName = userFirstName;
+        this.userImage = userImage;
+        this.isAdmin = isAdmin;
+        this.startTime = startTime;
+        this.stopTime = stopTime;
+        this.spentTime = Math.round((double) spentTime / 3600.0 * 10.0) / 10.0;
+        this.status = status;
+    }
+
+    public UserActivity(int activityId, String activityName, long spentTime, Status status) {
+        this.activityId = activityId;
+        this.activityName = activityName;
+        this.spentTime = Math.round((double) spentTime / 3600.0 * 10.0) / 10.0;
+        this.status = status;
+    }
 
     public int getUserId() {
         return userId;
@@ -154,5 +178,18 @@ public class UserActivity {
         public String getValue() {
             return value;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserActivity that = (UserActivity) o;
+        return userId == that.userId && isAdmin == that.isAdmin && activityId == that.activityId && Double.compare(that.spentTime, spentTime) == 0 && Objects.equals(userLastName, that.userLastName) && Objects.equals(userFirstName, that.userFirstName) && Objects.equals(userImage, that.userImage) && Objects.equals(activityName, that.activityName) && Objects.equals(startTime, that.startTime) && Objects.equals(stopTime, that.stopTime) && status == that.status;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, userLastName, userFirstName, userImage, isAdmin, activityId, activityName, startTime, stopTime, spentTime, status);
     }
 }

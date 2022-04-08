@@ -34,6 +34,8 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         logger.info("Opening Registration page");
         req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(req, resp);
     }
@@ -51,7 +53,8 @@ public class RegisterServlet extends HttpServlet {
         try {
             User user = registerService.registerUser(req, lastName, firstName, email, password, confirmPassword, imageName);
             if (user == null) {
-                logger.info("Redirecting to " + Service.getFullURL(req, "/register"));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        "/register"));
                 resp.sendRedirect(req.getContextPath() + "/register");
                 return;
             }
@@ -61,7 +64,8 @@ public class RegisterServlet extends HttpServlet {
             logger.info("Authorized user (id=" + user.getId() + ", isAdmin=" + user.isAdmin() +  "): " +
                             user.getLastName() + " " + user.getFirstName());
             req.getSession().setAttribute("authUser", user);
-            logger.info("Redirecting to " + Service.getFullURL(req, "/register"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/register"));
             resp.sendRedirect(req.getContextPath() + "/u/activities");
         } catch (ServiceException e) {
             e.printStackTrace();

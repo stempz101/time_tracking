@@ -9,6 +9,7 @@ import com.tracking.models.UserActivity;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -18,12 +19,11 @@ public interface ActivityDAO {
 
     /**
      * Creates activity in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param activity created activity
-     * @return true if activity is created, false if activity didn't go through validation
+     * @return created activity
      * @throws DBException if something went wrong while executing
      */
-    boolean create(HttpServletRequest req, Activity activity) throws DBException;
+    Activity create(Activity activity) throws DBException;
 
     /**
      * Getting all activities from DB
@@ -301,19 +301,19 @@ public interface ActivityDAO {
 
     /**
      * Updating activity in DB
-     * @param req for getting session to get/set attributes, getting parameters
      * @param activity updated activity
      * @return true if update was successful, false if activity didn't go through validation
      * @throws DBException if something went wrong while executing
      */
-    boolean update(HttpServletRequest req, Activity activity) throws DBException;
+    boolean update(Activity activity) throws DBException;
 
     /**
      * Deleting activity from DB
      * @param activityId id of activity
+     * @return true if activity is deleted
      * @throws DBException if something went wrong while executing
      */
-    void delete(int activityId) throws DBException;
+    boolean delete(int activityId) throws DBException;
 
     /**
      * Deleting activity by creator from DB
@@ -342,47 +342,20 @@ public interface ActivityDAO {
     boolean isForDelete(Connection con, Activity activity) throws DBException;
 
     /**
-     * Activity validation
-     * @param req for getting session to get/set attributes, getting parameters
-     * @param activity entered activity
-     * @return true if validation was successful
-     */
-    static boolean validateActivity(HttpServletRequest req, Activity activity) {
-        return validateName(req, activity.getName()) && validateDescription(req, activity.getDescription());
-    }
-
-    /**
      * Activity name validation
-     * @param req for getting session to get/set attributes, getting parameters
      * @param name entered name
      * @return true if validation was successful
      */
-    private static boolean validateName(HttpServletRequest req, String name) {
-        int errorCount = 0;
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (name == null || name.isEmpty()) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.activity_name_empty"));
-            errorCount++;
-        } else if (!name.matches("[а-щА-ЩЬьЮюЯяЇїІіЄєҐґ'\\w\\s]+")) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.activity_name_invalid"));
-            errorCount++;
-        }
-        return errorCount == 0;
+    static boolean validateName(String name) {
+        return name != null && !name.isEmpty() && name.matches("[а-щА-ЩЬьЮюЯяЇїІіЄєҐґ'\\w\\s?!,.\\-()]+");
     }
 
     /**
      * Activity description validation
-     * @param req for getting session to get/set attributes, getting parameters
      * @param description entered description
      * @return true if validation was successful
      */
-    private static boolean validateDescription(HttpServletRequest req, String description) {
-        int errorCount = 0;
-        ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-        if (description == null || description.isEmpty()) {
-            req.getSession().setAttribute("messageError", bundle.getString("message.activity_descr_empty"));
-            errorCount++;
-        }
-        return errorCount == 0;
+    static boolean validateDescription(String description) {
+        return description != null && !description.isEmpty();
     }
 }

@@ -19,10 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Service, that contains all actions with activity
@@ -39,17 +36,34 @@ public class ActivityService extends Service {
      * @throws ServiceException if something went wrong while executing
      */
     public boolean add(HttpServletRequest req, Activity activity) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        boolean result = false;
         try {
-            result = activityDAO.create(req, activity);
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            ActivityDAO activityDAO = factory.getActivityDao();
+
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
+            if (!ActivityDAO.validateName(activity.getName())) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.activity_name_error"));
+                logger.error("Validation error occurred (name): " + req.getSession().getAttribute("messageError"));
+                return false;
+            }
+            if (!ActivityDAO.validateDescription(activity.getDescription())) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.activity_descr_error"));
+                logger.error("Validation error occurred (name): " + req.getSession().getAttribute("messageError"));
+                return false;
+            }
+
+            if (activityDAO.create(activity) != null) {
+                req.getSession().removeAttribute("activity");
+                req.getSession().setAttribute("successMessage", bundle.getString("message.activity_created"));
+                return true;
+            }
+            return false;
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
             throw new ServiceException("ActivityService: add was failed", e);
         }
-        return result;
     }
 
     /**
@@ -60,17 +74,34 @@ public class ActivityService extends Service {
      * @throws ServiceException if something went wrong while executing
      */
     public boolean update(HttpServletRequest req, Activity activity) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
-        boolean result = false;
         try {
-            result = activityDAO.update(req, activity);
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
+            if (!ActivityDAO.validateName(activity.getName())) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.activity_name_error"));
+                logger.error("Validation error occurred (name): " + req.getSession().getAttribute("messageError"));
+                return false;
+            }
+            if (!ActivityDAO.validateDescription(activity.getDescription())) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.activity_descr_error"));
+                logger.error("Validation error occurred (name): " + req.getSession().getAttribute("messageError"));
+                return false;
+            }
+
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            ActivityDAO activityDAO = factory.getActivityDao();
+
+            if (activityDAO.update(activity)) {
+                req.getSession().removeAttribute("activity");
+                req.getSession().setAttribute("successMessage", bundle.getString("message.activity_updated"));
+                return true;
+            }
+            return false;
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
             throw new ServiceException("ActivityService: update was failed", e);
         }
-        return result;
     }
 
     /**
@@ -234,7 +265,8 @@ public class ActivityService extends Service {
                 userActivity = getUserInfo(authUser, activityId);
             if (authUser.isAdmin() || userActivity != null) {
                 Activity activity = get(activityId);
-                List<Category> categories = getActivityCategories(activity.getCategories(), Service.getLocale(req)); // localize
+                List<Category> categories = getActivityCategories(activity.getCategories(),
+                        Service.getLocale((String) req.getSession().getAttribute("lang"))); // localize
                 if (authUser.isAdmin()) {
                     List<User> usersNotInActivity = getAvailableUsers(activityId);
                     User creator = getCreator(activityId);

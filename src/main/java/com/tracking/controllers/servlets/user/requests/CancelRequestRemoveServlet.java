@@ -40,9 +40,11 @@ public class CancelRequestRemoveServlet extends HttpServlet {
 
         try {
             requestService.cancelRemove(req, requestId);
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.getSession().setAttribute("successMessage", bundle.getString("message.req_cancelled"));
-            logger.info("Redirecting to " + Service.getFullURL(req, "/u/requests"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/u/requests"));
             resp.sendRedirect(req.getContextPath() + "/u/requests");
         } catch (ServiceException e) {
             e.printStackTrace();

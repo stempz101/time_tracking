@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
+import java.util.ResourceBundle;
 
 /**
  * Service, that responsible for registration actions
@@ -32,20 +33,48 @@ public class RegisterService extends Service {
      */
     public User registerUser(HttpServletRequest req, String lastName, String firstName, String email,
                              String password, String confirmPassword, String image) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        UserDAO userDAO = factory.getUserDao();
-        saveFields(req, lastName, firstName, email);
-        User user;
         try {
-            user = userDAO.create(req, lastName, firstName, email, password, confirmPassword, image, UserDAO.IS_USER);
+            saveFields(req, lastName, firstName, email);
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
+            if (!UserDAO.validateName(lastName)) {
+                req.getSession().setAttribute("messageError", bundle.getString(""));
+                return null;
+            }
+            if (!UserDAO.validateName(firstName)) {
+                req.getSession().setAttribute("messageError", bundle.getString(""));
+                return null;
+            }
+            if (!UserDAO.validateEmail(email)) {
+                req.getSession().setAttribute("messageError", bundle.getString(""));
+                return null;
+            }
+            if (!UserDAO.validatePassword(password)) {
+                req.getSession().setAttribute("messageError", bundle.getString(""));
+                return null;
+            }
+            if (!UserDAO.confirmPassword(password, confirmPassword)) {
+                req.getSession().setAttribute("messageError", bundle.getString(""));
+                return null;
+            }
+
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            UserDAO userDAO = factory.getUserDao();
+
+            if (userDAO.ifExists(email)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.user_exists"));
+                return null;
+            }
+
+            User user = userDAO.create(lastName, firstName, email, password, confirmPassword, image, UserDAO.IS_USER);
             if (user != null)
                 deleteAttributes(req);
+            return user;
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
             throw new ServiceException("RegisterService: registerUser was failed", e);
         }
-        return user;
     }
 
     /**
@@ -62,20 +91,54 @@ public class RegisterService extends Service {
      */
     public User registerAdmin(HttpServletRequest req, String lastName, String firstName, String email,
                               String password, String confirmPassword, String image) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        UserDAO userDAO = factory.getUserDao();
-        saveFields(req, lastName, firstName, email);
-        User user;
         try {
-            user = userDAO.create(req, lastName, firstName, email, password, confirmPassword, image, UserDAO.IS_ADMIN);
+            saveFields(req, lastName, firstName, email);
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
+            if (!UserDAO.validateName(lastName)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.last_name_error"));
+                logger.error("Validation error occurred (last name): " + req.getSession().getAttribute("messageError"));
+                return null;
+            }
+            if (!UserDAO.validateName(firstName)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.first_name_error"));
+                logger.error("Validation error occurred (first name): " + req.getSession().getAttribute("messageError"));
+                return null;
+            }
+            if (!UserDAO.validateEmail(email)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.email_error"));
+                logger.error("Validation error occurred (email): " + req.getSession().getAttribute("messageError"));
+                return null;
+            }
+            if (!UserDAO.validatePassword(password)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.password_error"));
+                logger.error("Validation error occurred (password): " + req.getSession().getAttribute("messageError"));
+                return null;
+            }
+            if (!UserDAO.confirmPassword(password, confirmPassword)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.confirm_password_error"));
+                logger.error("Validation error occurred (confirm password): " + req.getSession().getAttribute("messageError"));
+                return null;
+            }
+
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            UserDAO userDAO = factory.getUserDao();
+
+            if (userDAO.ifExists(email)) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.user_exists"));
+                logger.error("Registration error: " + req.getSession().getAttribute("messageError"));
+                return null;
+            }
+
+            User user = userDAO.create(lastName, firstName, email, password, confirmPassword, image, UserDAO.IS_ADMIN);
             if (user != null)
                 deleteAttributes(req);
+            return user;
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
             throw new ServiceException("RegisterService: registerAdmin was failed", e);
         }
-        return user;
     }
 
     /**

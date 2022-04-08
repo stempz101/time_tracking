@@ -42,12 +42,14 @@ public class SetBlockServlet extends HttpServlet {
         try {
             HttpSession session = req.getSession();
             usersService.setBlock(userId, isBlocked);
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
             if (isBlocked)
                 session.setAttribute("successMessage", bundle.getString("message.user_blocked"));
             else
                 session.setAttribute("successMessage", bundle.getString("message.user_unblocked"));
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/users"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/users"));
             resp.sendRedirect(req.getContextPath() + "/a/users");
         } catch (ServiceException e) {
             e.printStackTrace();

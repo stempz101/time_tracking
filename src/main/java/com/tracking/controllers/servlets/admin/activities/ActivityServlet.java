@@ -33,7 +33,8 @@ public class ActivityServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            Service.setLang(req);
+            if (req.getParameter("lang") != null)
+                req.getSession().setAttribute("lang", req.getParameter("lang"));
             if (!activityService.processActivity(req, resp))
                 return;
             activityService.setQueryStringForPagination(req);

@@ -42,9 +42,11 @@ public class DeleteActivityServlet extends HttpServlet {
             Activity activity = activityService.get(activityId);
             activityService.delete(activityId);
             activityService.deleteActivityImage(activity.getImage(), getServletContext().getRealPath(""));
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.getSession().setAttribute("successMessage", bundle.getString("message.activity_deleted"));
-            logger.info("Redirecting to " + Service.getFullURL(req, "/a/activities"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/a/activities"));
             resp.sendRedirect(req.getContextPath() + "/a/activities");
         } catch (ServiceException e) {
             e.printStackTrace();

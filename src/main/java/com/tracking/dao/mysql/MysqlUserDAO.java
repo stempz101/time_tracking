@@ -5,6 +5,7 @@ import com.tracking.dao.DAOFactory;
 import com.tracking.dao.UserDAO;
 import com.tracking.controllers.exceptions.DBException;
 import com.tracking.dao.mapper.EntityMapper;
+import com.tracking.models.Activity;
 import com.tracking.models.UserActivity;
 import com.tracking.models.User;
 import org.apache.log4j.Logger;
@@ -41,50 +42,8 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public User auth(HttpServletRequest req, String email, String password) throws DBException {
+    public boolean checkEmail(String email) throws DBException {
         try {
-            logger.info("auth() has started");
-            if (!UserDAO.validateLogin(req, email, password)) {
-                logger.error("Validation error occurred (email, password): " + req.getSession().getAttribute("messageError"));
-                return null;
-            }
-
-            if (!checkEmail(req, email)) {
-                if (req.getSession().getAttribute("messageError") == null)
-                    req.getSession().setAttribute("messageError", "Email or password is incorrect");
-                logger.error("Error in checking email: " + req.getSession().getAttribute("messageError"));
-                return null;
-            }
-
-            User dbUser = getByEmail(email);
-            if (!checkPassword(req, dbUser, password)) {
-                if (req.getSession().getAttribute("messageError") == null)
-                    req.getSession().setAttribute("messageError", "Email or password is incorrect");
-                logger.error("Error in checking password: " + req.getSession().getAttribute("messageError"));
-                return null;
-            }
-
-            if (dbUser.isAdmin())
-                logger.info("Admin (id=" + dbUser.getId() + ") identification and authorization were successful");
-            else
-                logger.info("User (id=" + dbUser.getId() + ") identification and authorization were successful");
-            logger.info("auth() has ended");
-            return dbUser;
-        } catch (DBException e) {
-            e.printStackTrace();
-            logger.error(e);
-            throw new DBException("MysqlUserDAO: auth was failed.", e);
-        }
-    }
-
-    @Override
-    public boolean checkEmail(HttpServletRequest req, String email) throws DBException {
-        try {
-            if (email == null || email.isEmpty()) {
-                ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-                req.getSession().setAttribute("messageError", bundle.getString("message.email_empty"));
-                return false;
-            }
             User dbUser = getByEmail(email);
             return dbUser != null;
         } catch (DBException e) {
@@ -95,32 +54,17 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean checkPassword(HttpServletRequest req, User user, String password) {
+    public boolean checkPassword(User user, String password) {
         if (password == null || password.isEmpty()) {
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-            req.getSession().setAttribute("messageError", bundle.getString("message.password_empty"));
             return false;
         }
         return BCrypt.checkpw(password, user.getPassword());
     }
 
     @Override
-    public User create(HttpServletRequest req, String lastName, String firstName, String email,
+    public User create(String lastName, String firstName, String email,
                        String password, String confirmPassword, String image, boolean isAdmin) throws DBException {
         User user;
-
-        if (!UserDAO.validateRegistration(req, lastName, firstName, email, password, confirmPassword)) {
-            logger.error("Validation error occurred (last name, first name, email, password, confirmation password): " + req.getSession().getAttribute("messageError"));
-            return null;
-        }
-
-        if (ifExists(req, email)) {
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
-            req.getSession().setAttribute("messageError", bundle.getString("message.user_exists"));
-            logger.error("Error in checking email: " + req.getSession().getAttribute("messageError"));
-            return null;
-        }
-
         String query = isAdmin ? INSERT_ADMIN : INSERT_USER;
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
@@ -152,9 +96,9 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean ifExists(HttpServletRequest req, String email) throws DBException {
+    public boolean ifExists(String email) throws DBException {
         try {
-            return checkEmail(req, email);
+            return checkEmail(email);
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
@@ -170,7 +114,7 @@ public class MysqlUserDAO implements UserDAO {
             if (!sort.equals("last_name"))
                 orderBy += ", last_name";
             query = SELECT_USERS_ORDER.replace(ORDER_BY, orderBy);
-        } else if (order.equals("desc")){
+        } else if (order.equals("desc")) {
             query = SELECT_USERS_REVERSE;
         } else {
             query = SELECT_USERS;
@@ -209,7 +153,7 @@ public class MysqlUserDAO implements UserDAO {
             if (!sort.equals("last_name"))
                 orderBy += ", last_name";
             query = SELECT_USERS_ACTIVITY_ORDER.replace(ORDER_BY, orderBy);
-        } else if (order.equals("desc")){
+        } else if (order.equals("desc")) {
             query = SELECT_USERS_ACTIVITY_REVERSE;
         } else {
             query = SELECT_USERS_ACTIVITY;
@@ -251,7 +195,7 @@ public class MysqlUserDAO implements UserDAO {
             if (!sort.equals("last_name"))
                 orderBy += ", last_name";
             query = SELECT_USERS_ACTIVITY_WHERE_NAME_ORDER.replace(ORDER_BY, orderBy);
-        } else if (order.equals("desc")){
+        } else if (order.equals("desc")) {
             query = SELECT_USERS_ACTIVITY_WHERE_NAME_REVERSE;
         } else {
             query = SELECT_USERS_ACTIVITY_WHERE_NAME;
@@ -345,7 +289,7 @@ public class MysqlUserDAO implements UserDAO {
             if (!sort.equals("last_name"))
                 orderBy += ", last_name";
             query = SELECT_USERS_WHERE_NAME_ORDER.replace(ORDER_BY, orderBy);
-        } else if (order.equals("desc")){
+        } else if (order.equals("desc")) {
             query = SELECT_USERS_WHERE_NAME_REVERSE;
         } else {
             query = SELECT_USERS_WHERE_NAME;
@@ -543,10 +487,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean updateProfile(HttpServletRequest req, int userId, String lastName, String firstName, String email) throws DBException {
-        if (!UserDAO.validateEditProfile(req, lastName, firstName, email))
-            return false;
-
+    public boolean updateProfile(int userId, String lastName, String firstName, String email) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(UPDATE_USER_PROFILE)) {
             int c = 0;
@@ -582,43 +523,58 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean updatePassword(HttpServletRequest req, int userId, String currentPassword, String newPassword, String confirmPassword) throws DBException {
-        Connection con = null;
-        PreparedStatement prst = null;
-        try {
-            User authUser = getById(userId);
-            if (checkPassword(req, authUser, currentPassword)) {
-                if (!UserDAO.validateEditPassword(req, newPassword, confirmPassword)) {
-                    logger.error("Validation error occurred (new password, confirmation password): " + req.getSession().getAttribute("messageError"));
-                    return false;
-                }
-                String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
-                con = factory.getConnection();
-                prst = con.prepareStatement(UPDATE_USER_PASSWORD);
-                int c = 0;
-                prst.setString(++c, hashedPassword);
-                prst.setInt(++c, userId);
-                prst.executeUpdate();
-                logger.info("User (id=" + userId + ") password was updated");
-                return true;
-            }
-            if (req.getSession().getAttribute("messageError") == null)
-                req.getSession().setAttribute("messageError", "Password is incorrect");
-            logger.error("Error in checking current password: " + req.getSession().getAttribute("messageError"));
-            return false;
+    public boolean updatePassword(int userId, String currentPassword, String newPassword, String confirmPassword) throws DBException {
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(UPDATE_USER_PASSWORD)) {
+            String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
+            int c = 0;
+            prst.setString(++c, hashedPassword);
+            prst.setInt(++c, userId);
+            prst.executeUpdate();
+            logger.info("User (id=" + userId + ") password was updated");
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);
             throw new DBException("MysqlUserDAO: updatePassword was failed.", e);
-        } finally {
-            factory.closeResource(prst);
-            factory.closeResource(con);
         }
     }
 
     @Override
-    public boolean delete(User user) {
-        return false;
+    public boolean delete(User user) throws DBException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            con = factory.getConnection();
+            con.setAutoCommit(false);
+            prst = con.prepareStatement(SELECT_ALL_USER_ACTIVITIES);
+            prst.setInt(1, user.getId());
+            List<Activity> activityList = new ArrayList<>();
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    activityList.add(new Activity(rs.getInt(COL_ID), rs.getString(COL_NAME)));
+                }
+            }
+            prst = con.prepareStatement(DELETE_USER);
+            prst.setInt(1, user.getId());
+            prst.execute();
+            prst = con.prepareStatement(UPDATE_ACTIVITY_PEOPLE_COUNT);
+            for (Activity activity : activityList) {
+                prst.setInt(1, activity.getId());
+                prst.setInt(2, activity.getId());
+                prst.executeUpdate();
+            }
+            con.commit();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error(e);
+            factory.rollback(con);
+            throw new DBException("MysqlUserDAO: delete was failed.", e);
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
+        }
     }
 
     private void setUserActivityStatus(UserActivity user, String status) {
@@ -663,7 +619,7 @@ public class MysqlUserDAO implements UserDAO {
         public UserActivity mapRow(ResultSet rs) {
             try {
                 UserActivity userActivity = new UserActivity();
-                userActivity.setUserId(rs.getInt(COL_USER_ID));
+                userActivity.setUserId(rs.getInt(COL_ID));
                 userActivity.setUserLastName(rs.getString(COL_LAST_NAME));
                 userActivity.setUserFirstName(rs.getString(COL_FIRST_NAME));
                 userActivity.setUserImage(rs.getString(COL_IMAGE));

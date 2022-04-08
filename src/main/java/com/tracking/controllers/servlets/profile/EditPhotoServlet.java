@@ -37,7 +37,8 @@ public class EditPhotoServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Service.setLang(req);
+        if (req.getParameter("lang") != null)
+            req.getSession().setAttribute("lang", req.getParameter("lang"));
         logger.info("Opening Edit Photo page (profile)");
         req.getServletContext().getRequestDispatcher("/WEB-INF/jsp/profile/editPhoto.jsp").forward(req, resp);
     }
@@ -52,13 +53,16 @@ public class EditPhotoServlet extends HttpServlet {
             String realPath = getServletContext().getRealPath("");
             String role = authUser.isAdmin() ? "/a" : "/u";
             if (profileService.editPhoto(authUser, image, imageName, realPath)) {
-                logger.info("Redirecting to " + Service.getFullURL(req, role + "/profile?id=" + authUser.getId()));
+                logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                        role + "/profile?id=" + authUser.getId()));
                 resp.sendRedirect(req.getContextPath() + role + "/profile?id=" + authUser.getId());
                 return;
             }
-            ResourceBundle bundle = ResourceBundle.getBundle("content", Service.getLocale(req));
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.getSession().setAttribute("messageError", bundle.getString("message.err_photo_update"));
-            logger.info("Redirecting to " + Service.getFullURL(req, role + "/edit-photo"));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    role + "/edit-photo"));
             resp.sendRedirect(req.getContextPath() + role + "/edit-photo");
         } catch (ServiceException e) {
             e.printStackTrace();

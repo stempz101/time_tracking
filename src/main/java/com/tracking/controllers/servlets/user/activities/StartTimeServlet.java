@@ -43,7 +43,8 @@ public class StartTimeServlet extends HttpServlet {
         try {
             User authUser = (User) session.getAttribute("authUser");
             activityService.startTime(activityId, authUser.getId());
-            logger.info("Redirecting to " + Service.getFullURL(req, "/u/activity?id=" + activityId));
+            logger.info("Redirecting to " + Service.getFullURL(req.getRequestURL().toString(), req.getRequestURI(),
+                    "/u/activity?id=" + activityId));
             resp.sendRedirect(req.getContextPath() + "/u/activity?id=" + activityId);
         } catch (ServiceException e) {
             e.printStackTrace();

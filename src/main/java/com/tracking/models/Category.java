@@ -1,5 +1,7 @@
 package com.tracking.models;
 
+import java.util.Objects;
+
 /**
  * Category Model. Here there is defined what need to store
  */
@@ -55,5 +57,18 @@ public class Category {
 
     public void setNameUA(String nameUA) {
         this.nameUA = nameUA;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Category category = (Category) o;
+        return id == category.id && Objects.equals(nameEN, category.nameEN) && Objects.equals(nameUA, category.nameUA);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nameEN, nameUA);
     }
 }

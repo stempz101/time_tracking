@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Service, that contains all actions with request
@@ -35,11 +36,13 @@ public class RequestService extends Service {
      * @throws ServiceException if something went wrong while executing
      */
     public Request get(HttpServletRequest req, int requestId) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        RequestDAO requestDAO = factory.getRequestDao();
         try {
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            RequestDAO requestDAO = factory.getRequestDao();
             Request request = requestDAO.get(requestId);
-            List<Category> categories = new ActivityService().getActivityCategories(request.getActivity().getCategories(), Service.getLocale(req)); // localize
+
+            List<Category> categories = new ActivityService().getActivityCategories(request.getActivity().getCategories(),
+                    Service.getLocale((String) req.getSession().getAttribute("lang"))); // localize
             req.setAttribute("request", request);
             req.setAttribute("categories", categories);
             return request;
@@ -58,17 +61,34 @@ public class RequestService extends Service {
      * @throws ServiceException if something went wrong while executing
      */
     public boolean addForAdd(HttpServletRequest req, Activity activity) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        RequestDAO requestDAO = factory.getRequestDao();
-        boolean result = false;
         try {
-            result = requestDAO.create(req, activity, false);
+            ResourceBundle bundle = ResourceBundle.getBundle("content",
+                    Service.getLocale((String) req.getSession().getAttribute("lang")));
+            if (!ActivityDAO.validateName(activity.getName())) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.activity_name_error"));
+                logger.error("Validation error occurred (name): " + req.getSession().getAttribute("messageError"));
+                return false;
+            }
+            if (!ActivityDAO.validateDescription(activity.getDescription())) {
+                req.getSession().setAttribute("messageError", bundle.getString("message.activity_descr_error"));
+                logger.error("Validation error occurred (name): " + req.getSession().getAttribute("messageError"));
+                return false;
+            }
+
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            RequestDAO requestDAO = factory.getRequestDao();
+
+            if (requestDAO.create(activity, false) != null) {
+                req.getSession().removeAttribute("activity");
+                return true;
+            }
+            return false;
+
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
             throw new ServiceException("RequestService: addForAdd was failed", e);
         }
-        return result;
     }
 
     /**
@@ -79,17 +99,20 @@ public class RequestService extends Service {
      * @throws ServiceException if something went wrong while executing
      */
     public boolean addForDelete(HttpServletRequest req, Activity activity) throws ServiceException {
-        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        RequestDAO requestDAO = factory.getRequestDao();
-        boolean result = false;
         try {
-            result = requestDAO.create(req, activity, true);
+            DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+            RequestDAO requestDAO = factory.getRequestDao();
+
+            if (requestDAO.create(activity, true) != null) {
+                req.getSession().removeAttribute("activity");
+                return true;
+            }
+            return false;
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
             throw new ServiceException("RequestService: addForDelete was failed", e);
         }
-        return result;
     }
 
     /**
