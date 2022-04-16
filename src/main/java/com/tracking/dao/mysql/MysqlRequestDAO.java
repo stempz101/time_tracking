@@ -40,13 +40,15 @@ public class MysqlRequestDAO implements RequestDAO {
     }
 
     @Override
-    public Request create(Activity activity, boolean forDelete) throws DBException {
+    public synchronized Request create(Activity activity, boolean forDelete) throws DBException {
 
         Connection con = null;
         try {
             con = factory.getConnection();
             con.setAutoCommit(false);
-            if (!forDelete)
+            if (forDelete)
+                updateActivityStatus(con, activity, Activity.Status.DEL_WAITING);
+            else
                 createActivity(con, activity);
 
             Request request = null;
@@ -92,8 +94,7 @@ public class MysqlRequestDAO implements RequestDAO {
     public List<Request> getAll(String sort, String order, int start, int total, User authUser) throws DBException {
         String orderBy, query;
         if (sort != null && !sort.isEmpty()) {
-            if (sort.equals("create_time"))
-                sort = "requests." + sort;
+            sort = "requests." + sort;
             orderBy = sort + " " + order;
             query = authUser.isAdmin() ? SELECT_REQUESTS_ORDER.replace(ORDER_BY, orderBy) :
                     SELECT_USER_REQUESTS_ORDER.replace(ORDER_BY, orderBy);
@@ -119,7 +120,7 @@ public class MysqlRequestDAO implements RequestDAO {
                 }
             }
             logger.info("Selection of requests was successful");
-            logger.info("Count of request" + requestList.size());
+            logger.info("Count of request " + requestList.size());
             return requestList;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -184,7 +185,7 @@ public class MysqlRequestDAO implements RequestDAO {
             else
                 prst.setString(++c, activity.getImage());
             prst.setInt(++c, activity.getCreatorId());
-            prst.setBoolean(++c, activity.isByAdmin());
+            prst.setString(++c, activity.getStatus().getValue());
             prst.execute();
             int activityId = getInsertedActivityId(prst);
             activity.setId(activityId);
@@ -225,7 +226,7 @@ public class MysqlRequestDAO implements RequestDAO {
             prst.setInt(++c, activityId);
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next())
-                    categoryList.add(rs.getInt(COL_CATEGORY_ID));
+                    categoryList.add(rs.getInt(COL_ACT_CAT_CATEGORY_ID));
             }
             logger.info("Id selection of activity (id=" + activityId + ") categories was successful");
             logger.info("Count of ids: " + categoryList.size());
@@ -237,18 +238,37 @@ public class MysqlRequestDAO implements RequestDAO {
         return categoryList;
     }
 
+    public void updateActivityStatus(Connection con, Activity activity, Activity.Status status) throws DBException {
+        try (PreparedStatement prst = con.prepareStatement(UPDATE_ACTIVITY_STATUS)) {
+            int c = 0;
+            prst.setString(++c, status.getValue());
+            prst.setInt(++c, activity.getId());
+            prst.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error(e);
+            throw new DBException("MysqlRequestDAO: updateActivityStatus was failed.", e);
+        }
+    }
+
     @Override
-    public void confirmAdd(int requestId, int activityId, int userId) throws DBException {
+    public synchronized void confirmAdd(int requestId, int activityId, int userId) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
             con = factory.getConnection();
             con.setAutoCommit(false);
-            prst = con.prepareStatement(REQUEST_ADD_CONFIRM);
+            prst = con.prepareStatement(REQUEST_CONFIRM);
             int c = 0;
             prst.setInt(++c, requestId);
             prst.executeUpdate();
             logger.info("Request (id=" + requestId + ") for add was confirmed");
+            prst = con.prepareStatement(UPDATE_ACTIVITY_STATUS);
+            c = 0;
+            prst.setString(++c, Activity.Status.BY_USER.getValue());
+            prst.setInt(++c, activityId);
+            prst.executeUpdate();
+            logger.info("Activity (id=" + activityId + ") status was updated");
             prst = con.prepareStatement(INSERT_USER_ACTIVITY);
             c = 0;
             prst.setInt(++c, userId);
@@ -280,21 +300,162 @@ public class MysqlRequestDAO implements RequestDAO {
     }
 
     @Override
-    public boolean delete(int requestId, User authUser) throws DBException {
-        String query = authUser.isAdmin() ? DELETE_REQUEST : DELETE_USER_REQUEST;
-        try (Connection con = factory.getConnection();
-             PreparedStatement prst = con.prepareStatement(query)) {
+    public synchronized void confirmRemove(int requestId, int activityId) throws DBException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            con = factory.getConnection();
+            con.setAutoCommit(false);
+            prst = con.prepareStatement(REQUEST_CONFIRM);
             int c = 0;
             prst.setInt(++c, requestId);
-            if (!authUser.isAdmin())
-                prst.setInt(++c, authUser.getId());
+            prst.executeUpdate();
+            logger.info("Request (id=" + requestId + ") for remove was confirmed");
+            prst = con.prepareStatement(UPDATE_ACTIVITY_STATUS);
+            c = 0;
+            prst.setString(++c, Activity.Status.DEL_CONFIRMED.getValue());
+            prst.setInt(++c, activityId);
+            prst.executeUpdate();
+            logger.info("Activity (id=" + activityId + ") status was updated");
+            List<User> userList = new ArrayList<>();
+            prst = con.prepareStatement(SELECT_ALL_USERS_ACTIVITY);
+            c = 0;
+            prst.setInt(++c, activityId);
+            try (ResultSet rs = prst.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt(COL_USERS_ID));
+                    userList.add(user);
+                }
+            }
+            logger.info("Selection of participating users in activity (id=" + activityId + ") was successful");
+            prst = con.prepareStatement(DELETE_USERS_ACTIVITY);
+            c = 0;
+            prst.setInt(++c, activityId);
             prst.execute();
-            logger.info("Request (id=" + requestId + ") was removed successfully");
-            return true;
+            logger.info("Users from activity (id=" + activityId + ") was removed");
+            prst = con.prepareStatement(UPDATE_USER_ACTIVITY_COUNT);
+            for (User user : userList) {
+                c = 0;
+                prst.setInt(++c, user.getId());
+                prst.setInt(++c, user.getId());
+                prst.executeUpdate();
+            }
+            logger.info("Activity count of earlier participating users was updated");
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             logger.error(e);
-            throw new DBException("MysqlRequestDAO: delete was failed.", e);
+            factory.rollback(con);
+            throw new DBException("MysqlRequestDAO: confirmRemove was failed.", e);
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
+        }
+    }
+
+    @Override
+    public synchronized void declineAdd(int requestId, int activityId) throws DBException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            con = factory.getConnection();
+            con.setAutoCommit(false);
+            prst = con.prepareStatement(REQUEST_DECLINE);
+            int c = 0;
+            prst.setInt(++c, requestId);
+            prst.executeUpdate();
+            logger.info("Request (id=" + requestId + ") for add was declined");
+            prst = con.prepareStatement(UPDATE_ACTIVITY_STATUS);
+            c = 0;
+            prst.setString(++c, Activity.Status.ADD_DECLINED.getValue());
+            prst.setInt(++c, activityId);
+            prst.executeUpdate();
+            logger.info("Activity (id=" + activityId + ") status was updated");
+            con.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error(e);
+            factory.rollback(con);
+            throw new DBException("MysqlRequestDAO: declineAdd was failed.", e);
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
+        }
+    }
+
+    @Override
+    public synchronized void declineRemove(int requestId, int activityId) throws DBException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            con = factory.getConnection();
+            con.setAutoCommit(false);
+            prst = con.prepareStatement(REQUEST_DECLINE);
+            int c = 0;
+            prst.setInt(++c, requestId);
+            prst.executeUpdate();
+            logger.info("Request (id=" + requestId + ") for remove was declined");
+            prst = con.prepareStatement(UPDATE_ACTIVITY_STATUS);
+            c = 0;
+            prst.setString(++c, Activity.Status.BY_USER.getValue());
+            prst.setInt(++c, activityId);
+            prst.executeUpdate();
+            logger.info("Activity (id=" + activityId + ") status was updated");
+            con.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error(e);
+            factory.rollback(con);
+            throw new DBException("MysqlRequestDAO: declineRemove was failed.", e);
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
+        }
+    }
+
+    @Override
+    public synchronized void cancelAdd(int requestId, int activityId, User authUser) throws DBException {
+        try (Connection con = factory.getConnection();
+             PreparedStatement prst = con.prepareStatement(DELETE_ACTIVITY_BY_USER)) {
+            int c = 0;
+            prst.setInt(++c, activityId);
+            prst.setInt(++c, authUser.getId());
+            prst.execute();
+            logger.info("Request (id=" + requestId + ") for add was canceled successfully");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error(e);
+            throw new DBException("MysqlRequestDAO: cancelAdd was failed.", e);
+        }
+    }
+
+    @Override
+    public synchronized void cancelRemove(int requestId, int activityId, User authUser) throws DBException {
+        Connection con = null;
+        PreparedStatement prst = null;
+        try {
+            con = factory.getConnection();
+            con.setAutoCommit(false);
+            prst = con.prepareStatement(UPDATE_ACTIVITY_STATUS);
+            int c = 0;
+            prst.setString(++c, Activity.Status.BY_USER.getValue());
+            prst.setInt(++c, activityId);
+            prst.executeUpdate();
+            prst = con.prepareStatement(DELETE_REQUEST);
+            c = 0;
+            prst.setInt(++c, requestId);
+            prst.execute();
+            logger.info("Request (id=" + requestId + ") for remove was canceled successfully");
+            con.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error(e);
+            factory.rollback(con);
+            throw new DBException("MysqlRequestDAO: cancelRemove was failed.", e);
+        } finally {
+            factory.closeResource(prst);
+            factory.closeResource(con);
         }
     }
 
@@ -321,14 +482,15 @@ public class MysqlRequestDAO implements RequestDAO {
         public Request mapRow(ResultSet rs) {
             try {
                 Request request = new Request();
-                request.setId(rs.getInt(COL_JOINED_REQUEST_ID));
-                request.setActivityId(rs.getInt(COL_ACTIVITY_ID));
-                setRequestStatus(request, rs.getString(COL_STATUS));
-                request.setForDelete(rs.getBoolean(COL_FOR_DELETE));
-                request.setCreateTime(new Date(rs.getTimestamp(COL_CREATE_TIME).getTime()));
-                request.setActivity(new Activity(rs.getInt(COL_JOINED_ACTIVITY_ID), rs.getString(COL_NAME)));
-                request.setCreator(new User(rs.getInt(COL_JOINED_USER_ID), rs.getString(COL_LAST_NAME),
-                        rs.getString(COL_FIRST_NAME), rs.getString(COL_USER_IMAGE)));
+                request.setId(rs.getInt(COL_REQUESTS_ID));
+                request.setActivityId(rs.getInt(COL_REQUESTS_ACTIVITY_ID));
+                request.setStatus(Request.Status.get(rs.getString(COL_REQUESTS_STATUS)));
+                request.setForDelete(rs.getBoolean(COL_REQUESTS_FOR_DELETE));
+                request.setCreateTime(new Date(rs.getTimestamp(COL_REQUESTS_CREATE_TIME).getTime()));
+                request.setActivity(new Activity(rs.getInt(COL_ACTIVITIES_ID), rs.getString(COL_ACTIVITIES_NAME),
+                        Activity.Status.get(rs.getString(COL_ACTIVITIES_STATUS))));
+                request.setCreator(new User(rs.getInt(COL_USERS_ID), rs.getString(COL_USERS_LAST_NAME),
+                        rs.getString(COL_USERS_FIRST_NAME), rs.getString(COL_USERS_IMAGE)));
                 return request;
             } catch (SQLException e) {
                 throw new IllegalArgumentException();
@@ -338,16 +500,17 @@ public class MysqlRequestDAO implements RequestDAO {
         public Request mapActivity(ResultSet rs) {
             try {
                 Request request = new Request();
-                request.setId(rs.getInt(COL_JOINED_REQUEST_ID));
-                request.setActivityId(rs.getInt(COL_ACTIVITY_ID));
-                request.setForDelete(rs.getBoolean(COL_FOR_DELETE));
-                setRequestStatus(request, rs.getString(COL_STATUS));
+                request.setId(rs.getInt(COL_REQUESTS_ID));
+                request.setActivityId(rs.getInt(COL_REQUESTS_ACTIVITY_ID));
+                request.setForDelete(rs.getBoolean(COL_REQUESTS_FOR_DELETE));
+                request.setStatus(Request.Status.get(rs.getString(COL_REQUESTS_STATUS)));
                 Activity activity = new Activity();
-                activity.setId(rs.getInt(COL_JOINED_ACTIVITY_ID));
-                activity.setName(rs.getString(COL_NAME));
-                activity.setDescription(rs.getString(COL_DESCRIPTION));
-                activity.setImage(rs.getString(COL_IMAGE));
-                activity.setCreatorId(rs.getInt(COL_CREATOR_ID));
+                activity.setId(rs.getInt(COL_ACTIVITIES_ID));
+                activity.setName(rs.getString(COL_ACTIVITIES_NAME));
+                activity.setDescription(rs.getString(COL_ACTIVITIES_DESCRIPTION));
+                activity.setImage(rs.getString(COL_ACTIVITIES_IMAGE));
+                activity.setCreatorId(rs.getInt(COL_ACTIVITIES_CREATOR_ID));
+                activity.setStatus(Activity.Status.get(rs.getString(COL_ACTIVITIES_STATUS)));
                 request.setActivity(activity);
                 return request;
             } catch (SQLException e) {

@@ -1,8 +1,6 @@
 package com.tracking.models;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Activity Model. Here there is defined what need to store
@@ -38,23 +36,19 @@ public class Activity {
      */
     private int creatorId;
     /**
-     * Created by admin/user
-     */
-    private boolean byAdmin;
-    /**
      * Creation time of activity
      */
     private Date createTime;
     /**
-     * Is this activity sent for delete
+     * Activity status
      */
-    private boolean forDelete = false;
+    private Status status;
 
     public Activity() {
 
     }
 
-    public Activity(int id, String name, List<Integer> categories, String description, String image, int peopleCount, int creatorId, boolean byAdmin, Date createTime, boolean forDelete) {
+    public Activity(int id, String name, List<Integer> categories, String description, String image, int peopleCount, int creatorId, Date createTime, Status status) {
         this.id = id;
         this.name = name;
         this.categories = categories;
@@ -62,30 +56,34 @@ public class Activity {
         this.image = image;
         this.peopleCount = peopleCount;
         this.creatorId = creatorId;
-        this.byAdmin = byAdmin;
         this.createTime = createTime;
-        this.forDelete = forDelete;
+        this.status = status;
     }
 
-    public Activity(int id, String name, String description, String image, int peopleCount, int creatorId, boolean byAdmin, Date createTime, boolean forDelete) {
+    public Activity(int id, String name, String description, String image, int peopleCount, int creatorId, Date createTime, Status status) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.image = image;
         this.peopleCount = peopleCount;
         this.creatorId = creatorId;
-        this.byAdmin = byAdmin;
         this.createTime = createTime;
-        this.forDelete = forDelete;
+        this.status = status;
     }
 
-    public Activity(String name, List<Integer> categories, String description, String image, int creatorId, boolean byAdmin) {
+    public Activity(String name, List<Integer> categories, String description, String image, int creatorId, Status status) {
         this.name = name;
         this.categories = categories;
         this.description = description;
         this.image = image;
         this.creatorId = creatorId;
-        this.byAdmin = byAdmin;
+        this.status = status;
+    }
+
+    public Activity(int id, String name, Status status) {
+        this.id = id;
+        this.name = name;
+        this.status = status;
     }
 
     public Activity(int id, String name) {
@@ -149,14 +147,6 @@ public class Activity {
         this.creatorId = creatorId;
     }
 
-    public boolean isByAdmin() {
-        return byAdmin;
-    }
-
-    public void setByAdmin(boolean byAdmin) {
-        this.byAdmin = byAdmin;
-    }
-
     public Date getCreateTime() {
         return createTime;
     }
@@ -165,12 +155,43 @@ public class Activity {
         this.createTime = createTime;
     }
 
-    public boolean isForDelete() {
-        return forDelete;
+    public Status getStatus() {
+        return status;
     }
 
-    public void setForDelete(boolean forDelete) {
-        this.forDelete = forDelete;
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public enum Status {
+        BY_ADMIN("BY_ADMIN"),
+        BY_USER("BY_USER"),
+        ADD_WAITING("ADD_WAITING"),
+        ADD_DECLINED("ADD_DECLINED"),
+        DEL_WAITING("DEL_WAITING"),
+        DEL_CONFIRMED("DEL_CONFIRMED");
+
+        private final String value;
+
+        private static final Map<String, Status> lookup = new HashMap<>();
+
+        static {
+            for (Status s : Status.values()) {
+                lookup.put(s.getValue(), s);
+            }
+        }
+
+        Status(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static Status get(String value) {
+            return lookup.get(value);
+        }
     }
 
     @Override
@@ -178,11 +199,11 @@ public class Activity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Activity activity = (Activity) o;
-        return id == activity.id && peopleCount == activity.peopleCount && creatorId == activity.creatorId && byAdmin == activity.byAdmin && forDelete == activity.forDelete && Objects.equals(name, activity.name) && Objects.equals(categories, activity.categories) && Objects.equals(description, activity.description) && Objects.equals(image, activity.image) && Objects.equals(createTime, activity.createTime);
+        return id == activity.id && peopleCount == activity.peopleCount && creatorId == activity.creatorId && Objects.equals(name, activity.name) && Objects.equals(categories, activity.categories) && Objects.equals(description, activity.description) && Objects.equals(image, activity.image) && Objects.equals(createTime, activity.createTime) && status == activity.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, categories, description, image, peopleCount, creatorId, byAdmin, createTime, forDelete);
+        return Objects.hash(id, name, categories, description, image, peopleCount, creatorId, createTime, status);
     }
 }

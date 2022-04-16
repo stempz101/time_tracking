@@ -41,8 +41,8 @@ public class DeclineRequestAddServlet extends HttpServlet {
 
         try {
             Request request = requestService.get(req, requestId);
-            requestService.cancelAdd(req, request);
-            requestService.deleteActivityImage(request.getActivity().getImage(), getServletContext().getRealPath(""));
+            requestService.declineAdd(request);
+//            requestService.deleteActivityImage(request.getActivity().getImage(), getServletContext().getRealPath(""));
             ResourceBundle bundle = ResourceBundle.getBundle("content",
                     Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.setAttribute("successMessage", bundle.getString("message.req_declined"));

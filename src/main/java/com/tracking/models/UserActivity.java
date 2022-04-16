@@ -1,6 +1,8 @@
 package com.tracking.models;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -171,12 +173,24 @@ public class UserActivity {
 
         private final String value;
 
+        private static final Map<String, UserActivity.Status> lookup = new HashMap<>();
+
+        static {
+            for (UserActivity.Status s : UserActivity.Status.values()) {
+                lookup.put(s.getValue(), s);
+            }
+        }
+
         Status(String value) {
             this.value = value;
         }
 
         public String getValue() {
             return value;
+        }
+
+        public static UserActivity.Status get(String value) {
+            return lookup.get(value);
         }
     }
 

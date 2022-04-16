@@ -66,7 +66,7 @@ public class AddActivityServlet extends HttpServlet {
         User authUser = (User) session.getAttribute("authUser");
         Activity activity = (Activity) session.getAttribute("activity");
         if (activity == null)
-            activity = new Activity(name, categoryIds, description, imageName, authUser.getId(), true);
+            activity = new Activity(name, categoryIds, description, imageName, authUser.getId(), Activity.Status.BY_ADMIN);
         else
             saveFields(name, categoryIds, description, imageName, activity);
         session.setAttribute("activity", activity);

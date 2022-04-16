@@ -33,15 +33,15 @@ public class MysqlDAOFactory implements DAOFactory {
 
     @Override
     public synchronized Connection getConnection() throws SQLException {
-        try {
-            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/time_tracking");
-            return dataSource.getConnection();
-        } catch (NamingException e) {
-            logger.error("jdbc/time_tracking is missing!");
-            logger.error(e);
-            throw new IllegalStateException("jdbc/time_tracking is missing!", e);
-        }
-//        return getConnectionForTest();
+//        try {
+//            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/time_tracking");
+//            return dataSource.getConnection();
+//        } catch (NamingException e) {
+//            logger.error("jdbc/time_tracking is missing!");
+//            logger.error(e);
+//            throw new IllegalStateException("jdbc/time_tracking is missing!", e);
+//        }
+        return getConnectionForTest();
     }
 
     @Override

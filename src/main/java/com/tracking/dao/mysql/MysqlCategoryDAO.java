@@ -40,7 +40,7 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public Category create(String nameEN, String nameUA) throws DBException {
+    public synchronized Category create(String nameEN, String nameUA) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(INSERT_CATEGORY, Statement.RETURN_GENERATED_KEYS)) {
             int c = 0;
@@ -90,9 +90,9 @@ public class MysqlCategoryDAO implements CategoryDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     Category category = mapper.mapRow(rs);
-                    category.setId(rs.getInt(COL_ID));
-                    category.setNameEN(rs.getString(COL_NAME_EN));
-                    category.setNameUA(rs.getString(COL_NAME_UA));
+//                    category.setId(rs.getInt(COL_ID));
+//                    category.setNameEN(rs.getString(COL_NAME_EN));
+//                    category.setNameUA(rs.getString(COL_NAME_UA));
                     categoryList.add(category);
                 }
             }
@@ -337,7 +337,7 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public boolean update(int categoryId, String nameEN, String nameUA) throws DBException {
+    public synchronized boolean update(int categoryId, String nameEN, String nameUA) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(UPDATE_CATEGORY)) {
             int c = 0;
@@ -355,7 +355,7 @@ public class MysqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public boolean delete(int id) throws DBException {
+    public synchronized boolean delete(int id) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(DELETE_CATEGORY)) {
             prst.setInt(1, id);
@@ -393,9 +393,9 @@ public class MysqlCategoryDAO implements CategoryDAO {
         public Category mapRow(ResultSet rs) {
             try {
                 Category category = new Category();
-                category.setId(rs.getInt(COL_ID));
-                category.setNameEN(rs.getString(COL_NAME_EN));
-                category.setNameUA(rs.getString(COL_NAME_UA));
+                category.setId(rs.getInt(COL_CATEGORIES_ID));
+                category.setNameEN(rs.getString(COL_CATEGORIES_NAME_EN));
+                category.setNameUA(rs.getString(COL_CATEGORIES_NAME_UA));
                 return category;
             } catch (SQLException e) {
                 throw new IllegalStateException(e);

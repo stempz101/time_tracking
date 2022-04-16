@@ -267,7 +267,7 @@
                         </c:otherwise>
                     </c:choose>
                     <div class="card-body">
-                        <h5><a href="<%--{{ route('admin.showActivity', ['id' => $item->id]) }}--%>"
+                        <h5><a href="<%=request.getContextPath() + "/a/activity"%>?id=${activity.id}"
                                class="text-black text-decoration-none"><c:out value="${activity.name}" /></a></h5>
                         <h6 class="opacity-75">
                             <mtl:setCategoriesForActivities categoryList="${requestScope.categories}"

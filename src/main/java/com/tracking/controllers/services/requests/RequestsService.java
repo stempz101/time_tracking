@@ -51,7 +51,7 @@ public class RequestsService extends Service {
             }
 
             int requestCount;
-            String sort = req.getParameter("sortBy");
+            String sort = req.getParameter("sort");
             String order = req.getParameter("order");
             if (order == null || order.isEmpty())
                 order = "asc";

@@ -141,13 +141,47 @@ public class RequestService extends Service {
      */
     public void confirmRemove(Request request) throws ServiceException {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
+        RequestDAO requestDAO = factory.getRequestDao();
         try {
-            activityDAO.delete(request.getActivityId());
+            requestDAO.confirmRemove(request.getId(), request.getActivityId());
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
             throw new ServiceException("RequestService: confirmRemove was failed", e);
+        }
+    }
+
+    /**
+     * Declining of adding request
+     * @param request selected request
+     * @throws ServiceException if something went wrong while executing
+     */
+    public void declineAdd(Request request) throws ServiceException {
+        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+        RequestDAO requestDAO = factory.getRequestDao();
+        try {
+            requestDAO.declineAdd(request.getId(), request.getActivityId());
+        } catch (DBException e) {
+            e.printStackTrace();
+            logger.error(e);
+            throw new ServiceException("RequestService: declineAdd was failed", e);
+        }
+    }
+
+    /**
+     * Declining of remove request
+     * @param request selected request
+     * @throws ServiceException if something went wrong while executing
+     */
+    public void declineRemove(Request request) throws ServiceException {
+        DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
+        RequestDAO requestDAO = factory.getRequestDao();
+        try {
+            requestDAO.declineRemove(request.getId(), request.getActivityId());
+        } catch (DBException e) {
+            e.printStackTrace();
+            logger.error(e);
+            throw new ServiceException("RequestService: declineRemove was failed", e);
         }
     }
 
@@ -159,13 +193,10 @@ public class RequestService extends Service {
      */
     public void cancelAdd(HttpServletRequest req, Request request) throws ServiceException {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
-        ActivityDAO activityDAO = factory.getActivityDao();
+        RequestDAO requestDAO = factory.getRequestDao();
         try {
             User authUser = (User) req.getSession().getAttribute("authUser");
-            if (authUser.isAdmin())
-                activityDAO.delete(request.getActivityId());
-            else
-                activityDAO.deleteByCreator(request.getActivityId(), authUser.getId());
+            requestDAO.cancelAdd(request.getId(), request.getActivityId(), authUser);
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);
@@ -176,15 +207,15 @@ public class RequestService extends Service {
     /**
      * Canceling of removing request
      * @param req for getting session to get/set attributes, getting parameters
-     * @param requestId id of request
+     * @param request selected request
      * @throws ServiceException if something went wrong while executing
      */
-    public void cancelRemove(HttpServletRequest req, int requestId) throws ServiceException {
+    public void cancelRemove(HttpServletRequest req, Request request) throws ServiceException {
         DAOFactory factory = DAOFactory.getDAOFactory(DAOFactory.FactoryType.MYSQL);
         RequestDAO requestDAO = factory.getRequestDao();
         try {
             User authUser = (User) req.getSession().getAttribute("authUser");
-            requestDAO.delete(requestId, authUser);
+            requestDAO.cancelRemove(request.getId(), request.getActivityId(), authUser);
         } catch (DBException e) {
             e.printStackTrace();
             logger.error(e);

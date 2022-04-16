@@ -3,6 +3,7 @@ package com.tracking.controllers.servlets.admin.requests;
 import com.tracking.controllers.exceptions.ServiceException;
 import com.tracking.controllers.services.Service;
 import com.tracking.controllers.services.requests.RequestService;
+import com.tracking.models.Request;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -39,7 +40,8 @@ public class DeclineRequestRemoveServlet extends HttpServlet {
         int requestId = Integer.parseInt(req.getParameter("id"));
 
         try {
-            requestService.cancelRemove(req, requestId);
+            Request request = requestService.get(req, requestId);
+            requestService.declineRemove(request);
             ResourceBundle bundle = ResourceBundle.getBundle("content",
                     Service.getLocale((String) req.getSession().getAttribute("lang")));
             req.setAttribute("successMessage", bundle.getString("message.req_declined"));

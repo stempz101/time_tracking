@@ -68,7 +68,7 @@ public class MysqlUserDAOTest {
         expected.add(new UserActivity(47, "Assa", "Adas", null, false,
                 new Date(1649363871000L), new Date(1649367249000L), 3378, UserActivity.Status.STOPPED));
         expected.add(new UserActivity(46, "Ackerman", "Levi", "1648997092108.jpg",
-                false, new Date(1649017140000L), new Date(1649017747000L), 609, UserActivity.Status.STOPPED));
+                false, new Date(1650137152000L), new Date(1650137152000L), 609, UserActivity.Status.STOPPED));
 
         List<UserActivity> userList = userDAO.getAllWhereInActivity(78, "spent_time", "desc", 1, 3);
         assertNotNull(userList);
@@ -225,7 +225,7 @@ public class MysqlUserDAOTest {
 
     @Test
     public void startStopTimeTest() throws DBException {
-        int activityId = 72;
+        int activityId = 78;
         User user = new User();
         user.setId(46);
         UserActivity userInfo = userDAO.getWhereInActivity(user, activityId);

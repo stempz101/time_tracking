@@ -87,12 +87,45 @@ public interface RequestDAO {
     void confirmAdd(int requestId, int activityId, int userId) throws DBException;
 
     /**
-     * Deleting request from DB
+     * Confirmation of remove request in DB
      * @param requestId id of request
-     * @param authUser authorized user
-     * @return true if request is deleted
+     * @param activityId id of activity
      * @throws DBException if something went wrong while executing
      */
-    boolean delete(int requestId, User authUser) throws DBException;
+    void confirmRemove(int requestId, int activityId) throws DBException;
+
+    /**
+     * Declining of add request in DB
+     * @param requestId id of request
+     * @param activityId id of activity
+     * @throws DBException if something went wrong while executing
+     */
+    void declineAdd(int requestId, int activityId) throws DBException;
+
+    /**
+     * Declining of remove request in DB
+     * @param requestId id of request
+     * @param activityId id of activity
+     * @throws DBException if something went wrong while executing
+     */
+    void declineRemove(int requestId, int activityId) throws DBException;
+
+    /**
+     * Canceling of add request in DB
+     * @param requestId id of request
+     * @param activityId id of activity
+     * @param authUser authorized user
+     * @throws DBException if something went wrong while executing
+     */
+    void cancelAdd(int requestId, int activityId, User authUser) throws DBException;
+
+    /**
+     * Canceling of remove request in DB
+     * @param requestId id of request
+     * @param activityId id of activity
+     * @param authUser authorized user
+     * @throws DBException if something went wrong while executing
+     */
+    void cancelRemove(int requestId, int activityId, User authUser) throws DBException;
 
 }

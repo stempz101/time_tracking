@@ -213,7 +213,7 @@
                         <td><c:out value="${category.nameEN}"/></td>
                         <td><c:out value="${category.nameUA}"/></td>
                         <td>
-                            <div>
+                            <div class="btn-group">
                                 <c:if test="${category.id > 1}">
                                     <a href="<%= request.getContextPath() + "/a/edit-cat" %>?id=${category.id}"
                                        class="btn btn-primary"><fmt:message key="edit" bundle="${myBundle}" /></a>

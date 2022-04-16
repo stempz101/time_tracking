@@ -172,7 +172,7 @@
                                 <tr class="table-success">
                                     <td>
                                         <div class="d-flex justify-content-center">
-                                            <a href="#" class="link-dark text-decoration-none">
+                                            <a href="<%= request.getContextPath() + "/a/profile" %>?id=${request.creator.id}" class="link-dark text-decoration-none">
                                                 <div class="d-flex align-items-center">
                                                     <c:choose>
                                                         <c:when test="${request.creator.image == null}">
@@ -203,9 +203,59 @@
                                     </td>
                                     <td><fmt:formatDate type="both" dateStyle="medium" value="${request.createTime}" /></td>
                                     <td>
-                                        <div>
+                                        <div class="btn-group">
                                             <a href="<%= request.getContextPath() + "/a/request" %>?id=${request.id}"
                                                class="btn btn-primary"><fmt:message key="show" bundle="${myBundle}" /></a>
+                                            <c:if test="${request.activity.status.value.equals('DEL_CONFIRMED')}">
+                                                <a href="<%= request.getContextPath() + "/a/del-req" %>?id=${request.id}"
+                                                   class="btn btn-danger"><fmt:message key="remove" bundle="${myBundle}" /></a>
+                                            </c:if>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:when>
+                            <c:when test="${request.status.value.equals('DECLINED')}">
+                                <tr class="table-danger">
+                                    <td>
+                                        <div class="d-flex justify-content-center">
+                                            <a href="<%= request.getContextPath() + "/a/profile" %>?id=${request.creator.id}" class="link-dark text-decoration-none">
+                                                <div class="d-flex align-items-center">
+                                                    <c:choose>
+                                                        <c:when test="${request.creator.image == null}">
+                                                            <div class="rounded-circle me-2"
+                                                                 style="background-image: url(${pageContext.request.contextPath}<%=FilePaths.GET_USER_DEFAULT_IMG%>);background-size: cover;background-position: center; height: 32px;width: 32px;"></div>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <div class="rounded-circle me-2"
+                                                                 style="background-image: url(${pageContext.request.contextPath}<%=FilePaths.GET_USER_IMG_UPLOAD_DIRECTORY%>${request.creator.image});background-size: cover;background-position: center; height: 32px;width: 32px;"></div>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <c:out value="${request.creator.lastName} ${request.creator.firstName}"/>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td><c:out value="${request.activity.name}" /></td>
+                                    <td><fmt:message key="declined" bundle="${myBundle}" /></td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${request.forDelete}">
+                                                <b><fmt:message key="requests.remove" bundle="${myBundle}" /></b>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <b><fmt:message key="requests.add" bundle="${myBundle}" /></b>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td><fmt:formatDate type="both" dateStyle="medium" value="${request.createTime}" /></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="<%= request.getContextPath() + "/a/request" %>?id=${request.id}"
+                                               class="btn btn-primary"><fmt:message key="show" bundle="${myBundle}" /></a>
+                                            <c:if test="${request.activity.status.value.equals('ADD_DECLINED')}">
+                                                <a href="<%= request.getContextPath() + "/a/del-req" %>?id=${request.id}"
+                                                   class="btn btn-danger"><fmt:message key="remove" bundle="${myBundle}" /></a>
+                                            </c:if>
                                         </div>
                                     </td>
                                 </tr>
@@ -214,7 +264,7 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex justify-content-center">
-                                            <a href="#" class="link-dark text-decoration-none">
+                                            <a href="<%= request.getContextPath() + "/a/profile" %>?id=${request.creator.id}" class="link-dark text-decoration-none">
                                                 <div class="d-flex align-items-center">
                                                     <c:choose>
                                                         <c:when test="${request.creator.image == null}">
@@ -245,7 +295,7 @@
                                     </td>
                                     <td><fmt:formatDate type="both" dateStyle="medium" value="${request.createTime}" /></td>
                                     <td>
-                                        <div>
+                                        <div class="btn-group">
                                             <a href="<%= request.getContextPath() + "/a/request" %>?id=${request.id}"
                                                class="btn btn-primary"><fmt:message key="show" bundle="${myBundle}" /></a>
                                             <c:choose>

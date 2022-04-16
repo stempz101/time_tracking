@@ -30,15 +30,18 @@ public class MysqlActivityDAOTest {
         List<Activity> expectedList = new ArrayList<>();
 
         List<Integer> categoryList = new ArrayList<>();
-        expectedList.add(new Activity(91, "test", new ArrayList<>(), "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                "1649366160603.png", 0, 19, true, new Date(1649105596000L), false));
+        categoryList.add(9);
         categoryList.add(14);
-        expectedList.add(new Activity(90, "Bla bla", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                null, 0, 19, true, new Date(1649105578000L), false));
+        categoryList.add(12);
+        categoryList.add(32);
+        expectedList.add(new Activity(109, "Test Remove", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
+                "1650053008673.png", 1, 46, new Date(1650053008000L), Activity.Status.BY_USER));
+        expectedList.add(new Activity(91, "test", new ArrayList<>(), "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
+                "1649366160603.png", 0, 19, new Date(1649105596000L), Activity.Status.BY_ADMIN));
         categoryList = new ArrayList<>();
         categoryList.add(14);
-        expectedList.add(new Activity(89, "Test test", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                "1649366205058.jpg", 0, 19, true, new Date(1649101396000L), false));
+        expectedList.add(new Activity(90, "Bla bla", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
+                null, 0, 19, new Date(1649105578000L), Activity.Status.BY_ADMIN));
 
         User authUser = getAdmin();
         List<Activity> activityList = activityDAO.getAll("create_time", "desc", 0, 7,
@@ -56,15 +59,18 @@ public class MysqlActivityDAOTest {
         List<Integer> categoryList = new ArrayList<>();
         categoryList.add(14);
         expectedList.add(new Activity(89, "Test test", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                "1649366205058.jpg", 0, 19, true, new Date(1649101396000L), false));
+                "1649366205058.jpg", 0, 19, new Date(1649101396000L), Activity.Status.BY_ADMIN));
+        categoryList = new ArrayList<>();
+        categoryList.add(9);
+        categoryList.add(14);
+        categoryList.add(12);
+        categoryList.add(32);
+        expectedList.add(new Activity(109, "Test Remove", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
+                "1650053008673.png", 1, 46, new Date(1650053008000L), Activity.Status.BY_USER));
         categoryList = new ArrayList<>();
         categoryList.add(32);
         expectedList.add(new Activity(85, "Test 6", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Expedita, laborum, magni. Ab accusamus aliquam animi asperiores, commodi debitis expedita fugit id ipsum necessitatibus quis sapiente sequi vel veniam vero vitae.",
-                "1649100262779.jpg", 0, 19, true, new Date(1649100262000L), false));
-        categoryList = new ArrayList<>();
-        categoryList.add(14);
-        expectedList.add(new Activity(79, "Test 2", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
-                "1649366199133.jpg", 4, 19, true, new Date(1648922810000L), false));
+                "1649100262779.jpg", 0, 19, new Date(1649100262000L), Activity.Status.BY_ADMIN));
 
         User user = getAdmin();
         List<Activity> activityList = activityDAO.getAllLike(search, "name", "desc", 0, 7,
@@ -82,13 +88,16 @@ public class MysqlActivityDAOTest {
         List<Activity> expectedList = new ArrayList<>();
         List<Integer> categoryList = new ArrayList<>();
         categoryList.add(9);
-        expectedList.add(new Activity(72, "dassdasd", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                null, 1, 46, false, new Date(1648635445000L), false));
+        categoryList.add(14);
+        expectedList.add(new Activity(78, "Test 1", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
+                "1649366174453.jpg", 7, 19, new Date(1648922737000L), Activity.Status.BY_ADMIN));
         categoryList = new ArrayList<>();
         categoryList.add(9);
         categoryList.add(14);
-        expectedList.add(new Activity(78, "Test 1", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
-                "1649366174453.jpg", 7, 19, true, new Date(1648922737000L), false));
+        categoryList.add(12);
+        categoryList.add(32);
+        expectedList.add(new Activity(109, "Test Remove", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
+                "1650053008673.png", 1, 46, new Date(1650053008000L), Activity.Status.BY_USER));
 
         User user = getAdmin();
         List<Activity> activityList = activityDAO.getAllWhereCategory(selectedCategoriesList, "name", "asc",
@@ -102,7 +111,7 @@ public class MysqlActivityDAOTest {
     public void getAllWhereCategoryIsNullTest() throws DBException {
         List<Activity> expectedList = new ArrayList<>();
         expectedList.add(new Activity(91, "test", new ArrayList<>(), "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                "1649366160603.png", 0, 19, true, new Date(1649105596000L), false));
+                "1649366160603.png", 0, 19, new Date(1649105596000L), Activity.Status.BY_ADMIN));
 
         User user = getAdmin();
         List<Activity> activityList = activityDAO.getAllWhereCategoryIsNull("create_time", "asc",
@@ -123,15 +132,18 @@ public class MysqlActivityDAOTest {
         categoryList.add(9);
         categoryList.add(14);
         expectedList.add(new Activity(78, "Test 1", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
-                "1649366174453.jpg", 7, 19, true, new Date(1648922737000L), false));
+                "1649366174453.jpg", 7, 19, new Date(1648922737000L), Activity.Status.BY_ADMIN));
         categoryList = new ArrayList<>();
         categoryList.add(14);
         expectedList.add(new Activity(79, "Test 2", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
-                "1649366199133.jpg", 4, 19, true, new Date(1648922810000L), false));
+                "1649366199133.jpg", 4, 19, new Date(1648922810000L), Activity.Status.BY_ADMIN));
         categoryList = new ArrayList<>();
+        categoryList.add(9);
         categoryList.add(14);
-        expectedList.add(new Activity(87, "Test 10", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                "1649101093762.png", 0, 19, true, new Date(1649101093000L), false));
+        categoryList.add(12);
+        categoryList.add(32);
+        expectedList.add(new Activity(109, "Test Remove", categoryList, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
+                "1650053008673.png", 1, 46, new Date(1650053008000L), Activity.Status.BY_USER));
 
         User user = getAdmin();
         List<Activity> activityList = activityDAO.getAllLikeAndWhereCategory(search, selectedCategoriesList,
@@ -147,7 +159,7 @@ public class MysqlActivityDAOTest {
 
         List<Activity> expectedList = new ArrayList<>();
         expectedList.add(new Activity(91, "test", new ArrayList<>(), "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aut dolore eius natus officia. Ab accusamus accusantium adipisci, assumenda autem consectetur ea, et magni maxime obcaecati, perferendis qui ratione tempore.",
-                "1649366160603.png", 0, 19, true, new Date(1649105596000L), false));
+                "1649366160603.png", 0, 19, new Date(1649105596000L), Activity.Status.BY_ADMIN));
 
         User user = getAdmin();
         List<Activity> activityList = activityDAO.getAllLikeAndWhereCategoryIsNull(search, "name", "asc",
@@ -161,11 +173,11 @@ public class MysqlActivityDAOTest {
     public void getAllCreatedTest() throws DBException {
         List<Activity> expectedList = new ArrayList<>();
         expectedList.add(new Activity(78, "Test 1", "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
-                "1649366174453.jpg", 7, 19, true, new Date(1648922737000L), false));
+                "1649366174453.jpg", 7, 19, new Date(1648922737000L), Activity.Status.BY_ADMIN));
         expectedList.add(new Activity(79, "Test 2", "Lorem ipsum dolor sit amet, consectetur adipisicing elit. A adipisci assumenda consequuntur dignissimos distinctio eaque eligendi enim et excepturi hic ipsum modi nam nemo, nostrum placeat qui quo ratione voluptatibus.",
-                "1649366199133.jpg", 4, 19, true, new Date(1648922810000L), false));
+                "1649366199133.jpg", 4, 19, new Date(1648922810000L), Activity.Status.BY_ADMIN));
         expectedList.add(new Activity(85, "Test 6", "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Expedita, laborum, magni. Ab accusamus aliquam animi asperiores, commodi debitis expedita fugit id ipsum necessitatibus quis sapiente sequi vel veniam vero vitae.",
-                "1649100262779.jpg", 0, 19, true, new Date(1649100262000L), false));
+                "1649100262779.jpg", 0, 19, new Date(1649100262000L), Activity.Status.BY_ADMIN));
 
         List<Activity> activityList = activityDAO.getAllCreated(19, 1, 3);
         assertNotNull(activityList);
@@ -177,7 +189,7 @@ public class MysqlActivityDAOTest {
     public void getAllForProfileTest() throws DBException {
         List<UserActivity> expectedList = new ArrayList<>();
         expectedList.add(new UserActivity(78, "Test 1", 609, UserActivity.Status.STOPPED));
-        expectedList.add(new UserActivity(72, "dassdasd", 0, UserActivity.Status.NOT_STARTED));
+        expectedList.add(new UserActivity(109, "Test Remove", 0, UserActivity.Status.NOT_STARTED));
 
         List<UserActivity> activityList = activityDAO.getAllForProfile(46, 1, 3);
         assertNotNull(activityList);
@@ -196,7 +208,7 @@ public class MysqlActivityDAOTest {
     @Test
     public void getCountWhereLikeTest() throws DBException {
         String search = "test";
-        int expectedCount = 6;
+        int expectedCount = 7;
         User user = getAdmin();
         int count = activityDAO.getCountWhereLike(search, 0, 7, user);
         assertEquals(expectedCount, count);
@@ -206,7 +218,7 @@ public class MysqlActivityDAOTest {
     public void getCountWhereCategoryTest() throws DBException {
         List<Integer> categoryList = new ArrayList<>();
         categoryList.add(14);
-        int expectedCount = 5;
+        int expectedCount = 6;
         User user = getAdmin();
         int count = activityDAO.getCountWhereCategory(categoryList, 0, 7, user);
         assertEquals(expectedCount, count);
@@ -225,7 +237,7 @@ public class MysqlActivityDAOTest {
         String search = "test";
         List<Integer> categoryList = new ArrayList<>();
         categoryList.add(14);
-        int expectedCount = 4;
+        int expectedCount = 5;
         User user = getAdmin();
         int count = activityDAO.getCountWhereLikeAndCategory(search, categoryList, 0, 7, user);
         assertEquals(expectedCount, count);
@@ -282,7 +294,7 @@ public class MysqlActivityDAOTest {
     public void getCreatorTest() throws DBException {
         User expected = new User(46, "Ackerman", "Levi", "1648997092108.jpg",
                 false, false);
-        User creator = activityDAO.getCreator(72);
+        User creator = activityDAO.getCreator(109);
         assertNotNull(creator);
         assertEquals(expected, creator);
     }
@@ -292,7 +304,7 @@ public class MysqlActivityDAOTest {
         List<Integer> expectedCategories = new ArrayList<>();
         expectedCategories.add(32);
         Activity expected = new Activity(85, "Test 6", expectedCategories, "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Expedita, laborum, magni. Ab accusamus aliquam animi asperiores, commodi debitis expedita fugit id ipsum necessitatibus quis sapiente sequi vel veniam vero vitae.",
-                "1649100262779.jpg", 0, 19, true, new Date(1649100262000L), false);
+                "1649100262779.jpg", 0, 19, new Date(1649100262000L), Activity.Status.BY_ADMIN);
         Activity activity = activityDAO.getById(85);
         assertNotNull(activity);
         assertEquals(expected, activity);
@@ -310,7 +322,7 @@ public class MysqlActivityDAOTest {
         activity.setDescription("Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid eos excepturi necessitatibus obcaecati quibusdam. Animi dolorum eaque earum fuga necessitatibus quasi, sapiente veritatis. Cum nostrum quam quis sunt tenetur ut?");
         activity.setImage("filename.png");
         activity.setCreatorId(48);
-        activity.setByAdmin(true);
+        activity.setStatus(Activity.Status.BY_ADMIN);
 
         Activity createdActivity = activityDAO.create(activity);
         assertNotNull(createdActivity);
@@ -319,7 +331,7 @@ public class MysqlActivityDAOTest {
         assertEquals(activity.getDescription(), createdActivity.getDescription());
         assertEquals(activity.getImage(), createdActivity.getImage());
         assertEquals(activity.getCreatorId(), createdActivity.getCreatorId());
-        assertEquals(activity.isByAdmin(), createdActivity.isByAdmin());
+        assertEquals(activity.getStatus(), createdActivity.getStatus());
 
         categoryIds = new ArrayList<>();
         categoryIds.add(17);

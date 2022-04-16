@@ -139,6 +139,18 @@
             <div class="row form-group mx-4 my-3">
                 <c:choose>
                     <c:when test="${requestScope.request.status.value.equals('CONFIRMED')}">
+                        <c:if test="${requestScope.request.activity.status.value.equals('DEL_CONFIRMED')}">
+                            <a href="<%= request.getContextPath() + "/a/del-req" %>?id=${requestScope.request.id}"
+                               class="btn btn-lg btn-danger mt-1"><fmt:message key="remove" bundle="${myBundle}" /></a>
+                        </c:if>
+                        <a href="<%= request.getContextPath() + "/a/requests" %>"
+                           class="btn btn-lg btn-primary mt-1"><fmt:message key="back" bundle="${myBundle}" /></a>
+                    </c:when>
+                    <c:when test="${requestScope.request.status.value.equals('DECLINED')}">
+                        <c:if test="${requestScope.request.activity.status.value.equals('ADD_DECLINED')}">
+                            <a href="<%= request.getContextPath() + "/a/del-req" %>?id=${requestScope.request.id}"
+                               class="btn btn-lg btn-danger mt-1"><fmt:message key="remove" bundle="${myBundle}" /></a>
+                        </c:if>
                         <a href="<%= request.getContextPath() + "/a/requests" %>"
                            class="btn btn-lg btn-primary mt-1"><fmt:message key="back" bundle="${myBundle}" /></a>
                     </c:when>

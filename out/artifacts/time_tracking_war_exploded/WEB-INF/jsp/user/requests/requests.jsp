@@ -187,7 +187,7 @@
                                     </td>
                                     <td><fmt:formatDate type="both" dateStyle="medium" value="${request.createTime}" /></td>
                                     <td>
-                                        <div>
+                                        <div class="btn-group">
                                             <a href="<%= request.getContextPath() + "/u/request" %>?id=${request.id}"
                                                class="btn btn-primary"><fmt:message key="show" bundle="${myBundle}" /></a>
                                         </div>
@@ -210,7 +210,7 @@
                                     </td>
                                     <td><fmt:formatDate type="both" dateStyle="medium" value="${request.createTime}" /></td>
                                     <td>
-                                        <div>
+                                        <div class="btn-group">
                                             <a href="<%= request.getContextPath() + "/u/request" %>?id=${request.id}"
                                                class="btn btn-primary"><fmt:message key="show" bundle="${myBundle}" /></a>
                                         </div>
@@ -233,7 +233,7 @@
                                     </td>
                                     <td><fmt:formatDate type="both" dateStyle="medium" value="${request.createTime}" /></td>
                                     <td>
-                                        <div>
+                                        <div class="btn-group">
                                             <a href="<%= request.getContextPath() + "/u/request" %>?id=${request.id}"
                                                class="btn btn-primary"><fmt:message key="show" bundle="${myBundle}" /></a>
                                             <c:choose>

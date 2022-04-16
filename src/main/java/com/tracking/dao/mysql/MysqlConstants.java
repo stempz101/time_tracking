@@ -13,101 +13,111 @@ public abstract class MysqlConstants {
     public static final String IN = "set_in";
 
     // FIELDS
-    public static final String COL_ID = "id";
-    public static final String COL_ACTIVITY_ID = "activity_id";
-    public static final String COL_CATEGORY_ID = "category_id";
-    public static final String COL_USER_ID = "user_id";
-    public static final String COL_CREATOR_ID = "creator_id";
-    public static final String COL_JOINED_REQUEST_ID = "requests.id";
-    public static final String COL_JOINED_ACTIVITY_ID = "activities.id";
-    public static final String COL_JOINED_USER_ID = "users.id";
+    // Activities
+    public static final String COL_ACTIVITIES_ID = "activities.id";
+    public static final String COL_ACTIVITIES_NAME = "activities.name";
+    public static final String COL_ACTIVITIES_DESCRIPTION = "activities.description";
+    public static final String COL_ACTIVITIES_IMAGE = "activities.image";
+    public static final String COL_ACTIVITIES_PEOPLE_COUNT = "activities.people_count";
+    public static final String COL_ACTIVITIES_CREATOR_ID = "activities.creator_id";
+    public static final String COL_ACTIVITIES_CREATE_TIME = "activities.create_time";
+    public static final String COL_ACTIVITIES_STATUS = "activities.status";
 
-    public static final String COL_NAME = "name";
-    public static final String COL_NAME_EN = "name_en";
-    public static final String COL_NAME_UA = "name_ua";
-    public static final String COL_DESCRIPTION = "description";
-    public static final String COL_IMAGE = "image";
-    public static final String COL_USER_IMAGE = "users.image";
-    public static final String COL_LAST_NAME = "last_name";
-    public static final String COL_FIRST_NAME = "first_name";
-    public static final String COL_EMAIL = "email";
-    public static final String COL_PASSWORD = "password";
-    public static final String COL_IS_ADMIN = "is_admin";
-    public static final String COL_IS_BLOCKED = "is_blocked";
+    // Activities + Categories
+    public static final String COL_ACT_CAT_ACTIVITY_ID = "activities_categories.activity_id";
+    public static final String COL_ACT_CAT_CATEGORY_ID = "activities_categories.category_id";
+
+    // Categories
+    public static final String COL_CATEGORIES_ID = "categories.id";
+    public static final String COL_CATEGORIES_NAME_EN = "categories.name_en";
+    public static final String COL_CATEGORIES_NAME_UA = "categories.name_ua";
+
+    // Requests
+    public static final String COL_REQUESTS_ID = "requests.id";
+    public static final String COL_REQUESTS_ACTIVITY_ID = "requests.activity_id";
+    public static final String COL_REQUESTS_STATUS = "requests.status";
+    public static final String COL_REQUESTS_FOR_DELETE = "requests.for_delete";
+    public static final String COL_REQUESTS_CREATE_TIME = "requests.create_time";
+
+    // Users
+    public static final String COL_USERS_ID = "users.id";
+    public static final String COL_USERS_LAST_NAME = "users.last_name";
+    public static final String COL_USERS_FIRST_NAME = "users.first_name";
+    public static final String COL_USERS_EMAIL = "users.email";
+    public static final String COL_USERS_PASSWORD = "users.password";
+    public static final String COL_USERS_IMAGE = "users.image";
+    public static final String COL_USERS_ACTIVITY_COUNT = "users.activity_count";
+    public static final String COL_USERS_SPENT_TIME = "users.spent_time";
+    public static final String COL_USERS_IS_ADMIN = "users.is_admin";
+    public static final String COL_USERS_IS_BLOCKED = "users.is_blocked";
+
+    // Users + Activities
+    public static final String COL_USE_ACT_USER_ID = "users_activities.user_id";
+    public static final String COL_USE_ACT_ACTIVITY_ID = "users_activities.activity_id";
+    public static final String COL_USE_ACT_START_TIME = "users_activities.start_time";
+    public static final String COL_USE_ACT_STOP_TIME = "users_activities.stop_time";
+    public static final String COL_USE_ACT_SPENT_TIME = "users_activities.spent_time";
+    public static final String COL_USE_ACT_STATUS = "users_activities.status";
+
+    // Other
     public static final String COL_COUNT = "count";
-    public static final String COL_START_TIME = "start_time";
-    public static final String COL_STOP_TIME = "stop_time";
-    public static final String COL_SPENT_TIME = "spent_time";
-    public static final String COL_STATUS = "status";
-    public static final String COL_PEOPLE_COUNT = "people_count";
-    public static final String COL_ACTIVITY_COUNT = "activity_count";
-    public static final String COL_CREATE_TIME = "create_time";
-    public static final String COL_BY_ADMIN = "by_admin";
-    public static final String COL_FOR_DELETE = "for_delete";
 
     // QUERIES
     // Activities
-    public static final String INSERT_ACTIVITY = "INSERT INTO activities (name, description, image, creator_id, by_admin) " +
+    public static final String INSERT_ACTIVITY = "INSERT INTO activities (name, description, image, creator_id, status) " +
             "VALUES (?, ?, ?, ?, ?)";
     public static final String SELECT_ACTIVITY = "SELECT * FROM activities WHERE id = ?";
     public static final String SELECT_ACTIVITIES = "SELECT * FROM activities " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count DESC, activities.create_time DESC, name LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_ORDER = "SELECT * FROM activities " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "people_count >= ? AND people_count <= ? " +
             "ORDER BY " + ORDER_BY + " LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_REVERSE = "SELECT * FROM activities " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count, activities.create_time, name DESC LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count DESC, create_time DESC, name LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_ORDER = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_ORDER = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY " + ORDER_BY + " LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_REVERSE = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_REVERSE = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count, create_time, name DESC LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE = "SELECT * FROM activities " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count DESC, activities.create_time DESC, name LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_ORDER = "SELECT * FROM activities " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY " + ORDER_BY + " LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_REVERSE = "SELECT * FROM activities " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count, activities.create_time, name DESC LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count DESC, create_time DESC, name LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_ORDER = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_ORDER = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY " + ORDER_BY + " LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_REVERSE = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_REVERSE = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND people_count >= ? AND people_count <= ? " +
             "ORDER BY people_count, create_time, name DESC LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY = "SELECT * FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ? " +
@@ -115,8 +125,7 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ? " +
@@ -124,14 +133,13 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_REVERSE = "SELECT * FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ? " +
             "ORDER BY people_count, activities.create_time, name DESC " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
@@ -139,7 +147,7 @@ public abstract class MysqlConstants {
             "HAVING COUNT(*) = ? " +
             "ORDER BY people_count DESC, create_time DESC, name " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
@@ -147,7 +155,7 @@ public abstract class MysqlConstants {
             "HAVING COUNT(*) = ? " +
             "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_REVERSE = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_REVERSE = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
@@ -157,43 +165,40 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "ORDER BY people_count DESC, activities.create_time DESC, name " +
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_WHERE_CATEGORY_IS_NULL_REVERSE = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "ORDER BY people_count, activities.create_time, name DESC " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "ORDER BY people_count DESC, create_time DESC, name " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL_REVERSE = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL_REVERSE = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
@@ -202,8 +207,7 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY = "SELECT * FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ? " +
@@ -211,8 +215,7 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ? " +
@@ -220,14 +223,13 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_REVERSE = "SELECT * FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ? " +
             "ORDER BY people_count, activities.create_time, name DESC " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
@@ -235,7 +237,7 @@ public abstract class MysqlConstants {
             "HAVING COUNT(*) = ? " +
             "ORDER BY people_count DESC, create_time DESC, name " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_ORDER = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
@@ -243,7 +245,7 @@ public abstract class MysqlConstants {
             "HAVING COUNT(*) = ? " +
             "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_REVERSE = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_REVERSE = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
@@ -253,8 +255,7 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = 1 " +
@@ -262,8 +263,7 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = 1 " +
@@ -271,14 +271,13 @@ public abstract class MysqlConstants {
             "LIMIT ?, ?";
     public static final String SELECT_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_REVERSE = "SELECT * FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = 1 " +
             "ORDER BY people_count, activities.create_time, name DESC " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
@@ -286,7 +285,7 @@ public abstract class MysqlConstants {
             "HAVING COUNT(*) = 1 " +
             "ORDER BY people_count DESC, create_time DESC, name " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_ORDER = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
@@ -294,7 +293,7 @@ public abstract class MysqlConstants {
             "HAVING COUNT(*) = 1 " +
             "ORDER BY " + ORDER_BY + " " +
             "LIMIT ?, ?";
-    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_REVERSE = "SELECT * FROM activities " +
+    public static final String SELECT_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_REVERSE = "SELECT * FROM activities " + // edit
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
@@ -308,28 +307,25 @@ public abstract class MysqlConstants {
             "WHERE user_id = ? " +
             "LIMIT ?, ?";
     public static final String GET_ACTIVITY_COUNT = "SELECT COUNT(*) count FROM activities " +
-            "LEFT JOIN requests ON activities.id = activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "people_count >= ? AND people_count <= ?";
-    public static final String GET_USER_ACTIVITY_COUNT = "SELECT COUNT(*) count FROM activities " +
+    public static final String GET_USER_ACTIVITY_COUNT = "SELECT COUNT(*) count FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND people_count >= ? AND people_count <= ?";
     public static final String GET_ACTIVITIES_LIKE_COUNT = "SELECT COUNT(*) count FROM activities " +
-            "LEFT JOIN requests ON activities.id = activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND people_count >= ? AND people_count <= ?";
-    public static final String GET_USER_ACTIVITIES_LIKE_COUNT = "SELECT COUNT(*) count FROM activities " +
+    public static final String GET_USER_ACTIVITIES_LIKE_COUNT = "SELECT COUNT(*) count FROM activities " + // edit
             "JOIN users_activities ON activities.id = activity_id " +
             "WHERE user_id = ? AND name LIKE ? AND people_count >= ? AND people_count <= ?";
     public static final String GET_ACTIVITIES_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " +
             "(SELECT COUNT(*) FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ?) a";
-    public static final String GET_USER_ACTIVITIES_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " +
+    public static final String GET_USER_ACTIVITIES_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " + // edit
             "(SELECT COUNT(*) FROM activities " +
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
@@ -339,11 +335,10 @@ public abstract class MysqlConstants {
     public static final String GET_ACTIVITIES_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " +
             "(SELECT COUNT(*) FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id) a";
-    public static final String GET_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " +
+    public static final String GET_USER_ACTIVITIES_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " + // edit
             "(SELECT COUNT(*) FROM activities " +
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
@@ -352,12 +347,11 @@ public abstract class MysqlConstants {
     public static final String GET_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " +
             "(SELECT COUNT(*) FROM activities " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IN (" + IN + ") AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = ?) a";
-    public static final String GET_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " +
+    public static final String GET_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_COUNT = "SELECT COUNT(*) count FROM " + // edit
             "(SELECT COUNT(*) FROM activities " +
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "JOIN activities_categories ON activities.id = activities_categories.activity_id " +
@@ -367,12 +361,11 @@ public abstract class MysqlConstants {
     public static final String GET_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " +
             "(SELECT COUNT(*) FROM activities " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
-            "LEFT JOIN requests ON activities.id = requests.activity_id " +
-            "WHERE for_delete IS NULL AND (status is null or status = 'CONFIRMED') AND " +
+            "WHERE (status = 'BY_ADMIN' OR status = 'BY_USER' OR status = 'DEL_WAITING') AND " +
             "name LIKE ? AND category_id IS NULL AND people_count >= ? AND people_count <= ? " +
             "GROUP BY activities.id " +
             "HAVING COUNT(*) = 1) a";
-    public static final String GET_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " +
+    public static final String GET_USER_ACTIVITIES_LIKE_AND_WHERE_CATEGORY_IS_NULL_COUNT = "SELECT COUNT(*) count FROM " + // edit
             "(SELECT COUNT(*) FROM activities " +
             "JOIN users_activities ON activities.id = users_activities.activity_id " +
             "LEFT JOIN activities_categories ON activities.id = activities_categories.activity_id " +
@@ -384,8 +377,9 @@ public abstract class MysqlConstants {
             "JOIN users_activities ON id = activity_id " +
             "WHERE user_id = ?";
     public static final String GET_ACTIVITY_PEOPLE_COUNT = "SELECT people_count FROM activities WHERE id = ?";
-    public static final String GET_ACTIVITIES_MAX_PEOPLE_COUNT = "SELECT MAX(people_count) people_count FROM activities";
+    public static final String GET_ACTIVITIES_MAX_PEOPLE_COUNT = "SELECT MAX(people_count) count FROM activities";
     public static final String UPDATE_ACTIVITY = "UPDATE activities SET name = ?, description = ?, image = ? WHERE id = ?";
+    public static final String UPDATE_ACTIVITY_STATUS = "UPDATE activities SET status = ? WHERE id = ?";
     public static final String DELETE_ACTIVITY = "DELETE FROM activities WHERE id = ?";
     public static final String DELETE_ACTIVITY_BY_USER = "DELETE FROM activities WHERE id = ? AND creator_id = ?";
 
@@ -470,7 +464,7 @@ public abstract class MysqlConstants {
     public static final String SELECT_REQUESTS = "SELECT * FROM requests " +
             "JOIN activities ON activity_id = activities.id " +
             "JOIN users ON creator_id = users.id " +
-            "ORDER BY status, requests.create_time DESC " +
+            "ORDER BY requests.status, requests.create_time DESC " +
             "LIMIT ?, ?";
     public static final String SELECT_REQUESTS_ORDER = "SELECT * FROM requests " +
             "JOIN activities ON activity_id = activities.id " +
@@ -480,13 +474,13 @@ public abstract class MysqlConstants {
     public static final String SELECT_REQUESTS_REVERSE = "SELECT * FROM requests " +
             "JOIN activities ON activity_id = activities.id " +
             "JOIN users ON creator_id = users.id " +
-            "ORDER BY status DESC, requests.create_time " +
+            "ORDER BY requests.status DESC, requests.create_time " +
             "LIMIT ?, ?";
     public static final String SELECT_USER_REQUESTS = "SELECT * FROM requests " +
             "JOIN activities ON activity_id = activities.id " +
             "JOIN users ON creator_id = users.id " +
             "WHERE creator_id = ? " +
-            "ORDER BY status, requests.create_time DESC " +
+            "ORDER BY requests.status, requests.create_time DESC " +
             "LIMIT ?, ?";
     public static final String SELECT_USER_REQUESTS_ORDER = "SELECT * FROM requests " +
             "JOIN activities ON activity_id = activities.id " +
@@ -498,7 +492,7 @@ public abstract class MysqlConstants {
             "JOIN activities ON activity_id = activities.id " +
             "JOIN users ON creator_id = users.id " +
             "WHERE creator_id = ? " +
-            "ORDER BY status DESC, requests.create_time " +
+            "ORDER BY requests.status DESC, requests.create_time " +
             "LIMIT ?, ?";
     public static final String GET_REQUEST_COUNT = "SELECT COUNT(*) count FROM requests";
     public static final String GET_USER_REQUEST_COUNT = "SELECT COUNT(*) count FROM requests " +
@@ -508,7 +502,8 @@ public abstract class MysqlConstants {
             "WHERE activity_id = ? AND for_delete IS NULL AND status = 'CONFIRMED'";
     public static final String GET_REQUEST_REMOVE = "SELECT * FROM requests " +
             "WHERE activity_id = ? AND for_delete = 1 AND status = 'WAITING'";
-    public static final String REQUEST_ADD_CONFIRM = "UPDATE requests SET status = 'CONFIRMED' WHERE id = ?";
+    public static final String REQUEST_CONFIRM = "UPDATE requests SET status = 'CONFIRMED' WHERE id = ?";
+    public static final String REQUEST_DECLINE = "UPDATE requests SET status = 'DECLINED' WHERE id = ?";
     public static final String DELETE_REQUEST = "DELETE FROM requests WHERE id = ?";
     public static final String DELETE_USER_REQUEST = "DELETE requests FROM requests " +
             "JOIN activities ON activity_id = activities.id " +
@@ -584,6 +579,7 @@ public abstract class MysqlConstants {
             "FROM users_activities WHERE user_id = ?)" +
             "WHERE id = ?";
     public static final String DELETE_USER_ACTIVITY = "DELETE FROM users_activities WHERE user_id = ? AND activity_id = ?";
+    public static final String DELETE_USERS_ACTIVITY = "DELETE FROM users_activities WHERE activity_id = ?";
     public static final String START_TIME = "UPDATE users_activities SET start_time = ?, status = 'STARTED' " +
             "WHERE activity_id = ? AND user_id = ?";
     public static final String STOP_TIME = "UPDATE users_activities SET stop_time = ?, " +

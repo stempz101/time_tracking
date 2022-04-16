@@ -62,7 +62,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public User create(String lastName, String firstName, String email,
+    public synchronized User create(String lastName, String firstName, String email,
                        String password, String confirmPassword, String image, boolean isAdmin) throws DBException {
         User user;
         String query = isAdmin ? INSERT_ADMIN : INSERT_USER;
@@ -170,7 +170,6 @@ public class MysqlUserDAO implements UserDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     UserActivity userActivity = mapper.mapRow(rs);
-                    setUserActivityStatus(userActivity, rs.getString(COL_STATUS));
                     userActivityList.add(userActivity);
                 }
             }
@@ -220,7 +219,6 @@ public class MysqlUserDAO implements UserDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     UserActivity userActivity = mapper.mapRow(rs);
-                    setUserActivityStatus(userActivity, rs.getString(COL_STATUS));
                     userActivityList.add(userActivity);
                 }
             }
@@ -268,7 +266,6 @@ public class MysqlUserDAO implements UserDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 if (rs.next()) {
                     UserActivity userActivity = mapper.mapRow(rs);
-                    setUserActivityStatus(userActivity, rs.getString(COL_STATUS));
                     logger.info("Selection of user (id=" + user.getId() + ") information in activity (id=" + activityId + ") was successful");
                     return userActivity;
                 }
@@ -413,7 +410,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public void setBlock(int userId, boolean isBlocked) throws DBException {
+    public synchronized void setBlock(int userId, boolean isBlocked) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(SET_USER_BLOCK)) {
             int c = 0;
@@ -432,7 +429,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public void startTime(int activityId, int userId) throws DBException {
+    public synchronized void startTime(int activityId, int userId) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(START_TIME)) {
             int c = 0;
@@ -449,7 +446,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public void stopTime(int activityId, int userId) throws DBException {
+    public synchronized void stopTime(int activityId, int userId) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -487,7 +484,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean updateProfile(int userId, String lastName, String firstName, String email) throws DBException {
+    public synchronized boolean updateProfile(int userId, String lastName, String firstName, String email) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(UPDATE_USER_PROFILE)) {
             int c = 0;
@@ -506,7 +503,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean updatePhoto(int userId, String imageName) throws DBException {
+    public synchronized boolean updatePhoto(int userId, String imageName) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(UPDATE_USER_PHOTO)) {
             int c = 0;
@@ -523,7 +520,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean updatePassword(int userId, String currentPassword, String newPassword, String confirmPassword) throws DBException {
+    public synchronized boolean updatePassword(int userId, String currentPassword, String newPassword, String confirmPassword) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(UPDATE_USER_PASSWORD)) {
             String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
@@ -541,7 +538,7 @@ public class MysqlUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean delete(User user) throws DBException {
+    public synchronized boolean delete(User user) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -552,7 +549,7 @@ public class MysqlUserDAO implements UserDAO {
             List<Activity> activityList = new ArrayList<>();
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
-                    activityList.add(new Activity(rs.getInt(COL_ID), rs.getString(COL_NAME)));
+                    activityList.add(new Activity(rs.getInt(COL_ACTIVITIES_ID), rs.getString(COL_ACTIVITIES_NAME)));
                 }
             }
             prst = con.prepareStatement(DELETE_USER);
@@ -594,16 +591,16 @@ public class MysqlUserDAO implements UserDAO {
         public User mapRow(ResultSet rs) {
             try {
                 User user = new User();
-                user.setId(rs.getInt(COL_ID));
-                user.setLastName(rs.getString(COL_LAST_NAME));
-                user.setFirstName(rs.getString(COL_FIRST_NAME));
-                user.setImage(rs.getString(COL_IMAGE));
-                user.setEmail(rs.getString(COL_EMAIL));
-                user.setPassword(rs.getString(COL_PASSWORD));
-                user.setActivityCount(rs.getInt(COL_ACTIVITY_COUNT));
-                user.setSpentTime(rs.getLong(COL_SPENT_TIME));
-                user.setAdmin(rs.getBoolean(COL_IS_ADMIN));
-                user.setBlocked(rs.getBoolean(COL_IS_BLOCKED));
+                user.setId(rs.getInt(COL_USERS_ID));
+                user.setLastName(rs.getString(COL_USERS_LAST_NAME));
+                user.setFirstName(rs.getString(COL_USERS_FIRST_NAME));
+                user.setImage(rs.getString(COL_USERS_IMAGE));
+                user.setEmail(rs.getString(COL_USERS_EMAIL));
+                user.setPassword(rs.getString(COL_USERS_PASSWORD));
+                user.setActivityCount(rs.getInt(COL_USERS_ACTIVITY_COUNT));
+                user.setSpentTime(rs.getLong(COL_USERS_SPENT_TIME));
+                user.setAdmin(rs.getBoolean(COL_USERS_IS_ADMIN));
+                user.setBlocked(rs.getBoolean(COL_USERS_IS_BLOCKED));
                 return user;
             } catch (SQLException e) {
                 throw new IllegalStateException(e);
@@ -619,16 +616,17 @@ public class MysqlUserDAO implements UserDAO {
         public UserActivity mapRow(ResultSet rs) {
             try {
                 UserActivity userActivity = new UserActivity();
-                userActivity.setUserId(rs.getInt(COL_ID));
-                userActivity.setUserLastName(rs.getString(COL_LAST_NAME));
-                userActivity.setUserFirstName(rs.getString(COL_FIRST_NAME));
-                userActivity.setUserImage(rs.getString(COL_IMAGE));
-                userActivity.setAdmin(rs.getBoolean(COL_IS_ADMIN));
-                if (rs.getTimestamp(COL_START_TIME) != null)
-                    userActivity.setStartTime(new Date(rs.getTimestamp(COL_START_TIME).getTime()));
-                if (rs.getTimestamp(COL_STOP_TIME) != null)
-                    userActivity.setStopTime(new Date(rs.getTimestamp(COL_STOP_TIME).getTime()));
-                userActivity.setSpentTime(rs.getLong(COL_SPENT_TIME));
+                userActivity.setUserId(rs.getInt(COL_USERS_ID));
+                userActivity.setUserLastName(rs.getString(COL_USERS_LAST_NAME));
+                userActivity.setUserFirstName(rs.getString(COL_USERS_FIRST_NAME));
+                userActivity.setUserImage(rs.getString(COL_USERS_IMAGE));
+                userActivity.setAdmin(rs.getBoolean(COL_USERS_IS_ADMIN));
+                if (rs.getTimestamp(COL_USE_ACT_START_TIME) != null)
+                    userActivity.setStartTime(new Date(rs.getTimestamp(COL_USE_ACT_START_TIME).getTime()));
+                if (rs.getTimestamp(COL_USE_ACT_STOP_TIME) != null)
+                    userActivity.setStopTime(new Date(rs.getTimestamp(COL_USE_ACT_STOP_TIME).getTime()));
+                userActivity.setSpentTime(rs.getLong(COL_USE_ACT_SPENT_TIME));
+                userActivity.setStatus(UserActivity.Status.get(rs.getString(COL_USE_ACT_STATUS)));
                 return userActivity;
             } catch (SQLException e) {
                 throw new IllegalStateException(e);

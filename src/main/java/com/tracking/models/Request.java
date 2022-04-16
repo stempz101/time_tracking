@@ -1,6 +1,8 @@
 package com.tracking.models;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -132,9 +134,18 @@ public class Request {
 
     public enum Status {
         WAITING("WAITING"),
-        CONFIRMED("CONFIRMED");
+        CONFIRMED("CONFIRMED"),
+        DECLINED("DECLINED");
 
         private final String value;
+
+        private static final Map<String, Request.Status> lookup = new HashMap<>();
+
+        static {
+            for (Request.Status s : Request.Status.values()) {
+                lookup.put(s.getValue(), s);
+            }
+        }
 
         Status(String value) {
             this.value = value;
@@ -142,6 +153,10 @@ public class Request {
 
         public String getValue() {
             return value;
+        }
+
+        public static Request.Status get(String value) {
+            return lookup.get(value);
         }
     }
 

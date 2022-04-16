@@ -39,7 +39,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public Activity create(Activity activity) throws DBException {
+    public synchronized Activity create(Activity activity) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -51,7 +51,7 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setString(++c, activity.getDescription());
             setImageToStatement(activity.getImage(), prst, ++c);
             prst.setInt(++c, activity.getCreatorId());
-            prst.setBoolean(++c, activity.isByAdmin());
+            prst.setString(++c, activity.getStatus().getValue());
             prst.execute();
             int activityId = getInsertedActivityId(prst);
             setActivityCategories(con, activity.getCategories(), activityId);
@@ -104,10 +104,10 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     Activity activity = mapper.mapRow(rs);
-                    if (activity.isByAdmin() || isConfirmed(con, activity)) {
+                    if (activity.getStatus().equals(Activity.Status.BY_ADMIN) ||
+                            activity.getStatus().equals(Activity.Status.BY_USER) ||
+                            activity.getStatus().equals(Activity.Status.DEL_WAITING)) {
                         activity.setCategories(withCategories(con, activity.getId()));
-                        if (!authUser.isAdmin() && isForDelete(con, activity))
-                            activity.setForDelete(true);
                         activityList.add(activity);
                     }
                 }
@@ -158,7 +158,9 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     Activity activity = mapper.mapRow(rs);
-                    if (activity.isByAdmin() || isConfirmed(con, activity)) {
+                    if (activity.getStatus().equals(Activity.Status.BY_ADMIN) ||
+                            activity.getStatus().equals(Activity.Status.BY_USER) ||
+                            activity.getStatus().equals(Activity.Status.DEL_WAITING)) {
                         activity.setCategories(withCategories(con, activity.getId()));
                         activityList.add(activity);
                     }
@@ -213,7 +215,9 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     Activity activity = mapper.mapRow(rs);
-                    if (activity.isByAdmin() || isConfirmed(con, activity)) {
+                    if (activity.getStatus().equals(Activity.Status.BY_ADMIN) ||
+                            activity.getStatus().equals(Activity.Status.BY_USER) ||
+                            activity.getStatus().equals(Activity.Status.DEL_WAITING)) {
                         activity.setCategories(withCategories(con, activity.getId()));
                         activityList.add(activity);
                     }
@@ -265,7 +269,9 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     Activity activity = mapper.mapRow(rs);
-                    if (activity.isByAdmin() || isConfirmed(con, activity)) {
+                    if (activity.getStatus().equals(Activity.Status.BY_ADMIN) ||
+                            activity.getStatus().equals(Activity.Status.BY_USER) ||
+                            activity.getStatus().equals(Activity.Status.DEL_WAITING)) {
                         activity.setCategories(withCategories(con, activity.getId()));
                         activityList.add(activity);
                     }
@@ -322,7 +328,9 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     Activity activity = mapper.mapRow(rs);
-                    if (activity.isByAdmin() || isConfirmed(con, activity)) {
+                    if (activity.getStatus().equals(Activity.Status.BY_ADMIN) ||
+                            activity.getStatus().equals(Activity.Status.BY_USER) ||
+                            activity.getStatus().equals(Activity.Status.DEL_WAITING)) {
                         activity.setCategories(withCategories(con, activity.getId()));
                         activityList.add(activity);
                     }
@@ -376,7 +384,9 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     Activity activity = mapper.mapRow(rs);
-                    if (activity.isByAdmin() || isConfirmed(con, activity)) {
+                    if (activity.getStatus().equals(Activity.Status.BY_ADMIN) ||
+                            activity.getStatus().equals(Activity.Status.BY_USER) ||
+                            activity.getStatus().equals(Activity.Status.DEL_WAITING)) {
                         activity.setCategories(withCategories(con, activity.getId()));
                         activityList.add(activity);
                     }
@@ -433,7 +443,6 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     UserActivity activity = mapper.mapRow(rs);
-                    setUserActivityStatus(activity, rs.getString(COL_STATUS));
                     activityList.add(activity);
                 }
             }
@@ -697,7 +706,7 @@ public class MysqlActivityDAO implements ActivityDAO {
              ResultSet rs = stmt.executeQuery(GET_ACTIVITIES_MAX_PEOPLE_COUNT)) {
             int count = 0;
             if (rs.next())
-                count = rs.getInt(COL_PEOPLE_COUNT);
+                count = rs.getInt(COL_COUNT);
             logger.info("Determination of max people count among the activities was successful");
             return count;
         } catch (SQLException e) {
@@ -716,12 +725,12 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 if (rs.next()) {
                     creator = new User();
-                    creator.setId(rs.getInt(COL_ID));
-                    creator.setLastName(rs.getString(COL_LAST_NAME));
-                    creator.setFirstName(rs.getString(COL_FIRST_NAME));
-                    creator.setImage(rs.getString(COL_IMAGE));
-                    creator.setAdmin(rs.getBoolean(COL_IS_ADMIN));
-                    creator.setBlocked(rs.getBoolean(COL_IS_BLOCKED));
+                    creator.setId(rs.getInt(COL_USERS_ID));
+                    creator.setLastName(rs.getString(COL_USERS_LAST_NAME));
+                    creator.setFirstName(rs.getString(COL_USERS_FIRST_NAME));
+                    creator.setImage(rs.getString(COL_USERS_IMAGE));
+                    creator.setAdmin(rs.getBoolean(COL_USERS_IS_ADMIN));
+                    creator.setBlocked(rs.getBoolean(COL_USERS_IS_BLOCKED));
                 }
             }
             logger.info("Selection of activity (id=" + activityId + ") creator was successful");
@@ -764,7 +773,7 @@ public class MysqlActivityDAO implements ActivityDAO {
             prst.setInt(++c, activityId);
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next())
-                    categoryList.add(rs.getInt(COL_CATEGORY_ID));
+                    categoryList.add(rs.getInt(COL_ACT_CAT_CATEGORY_ID));
             }
             logger.info("Id selection of activity (id=" + activityId + ") categories was successful");
             logger.info("Count of ids: " + categoryList.size());
@@ -810,7 +819,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public void addUser(int activityId, int userId) throws DBException {
+    public synchronized void addUser(int activityId, int userId) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -847,7 +856,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public void deleteUser(int activityId, int userId) throws DBException {
+    public synchronized void deleteUser(int activityId, int userId) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -884,7 +893,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public boolean update(Activity activity) throws DBException {
+    public synchronized boolean update(Activity activity) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -913,7 +922,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public boolean delete(int activityId) throws DBException {
+    public synchronized boolean delete(int activityId) throws DBException {
         Connection con = null;
         PreparedStatement prst = null;
         try {
@@ -926,7 +935,7 @@ public class MysqlActivityDAO implements ActivityDAO {
             try (ResultSet rs = prst.executeQuery()) {
                 while (rs.next()) {
                     User user = new User();
-                    user.setId(rs.getInt(COL_ID));
+                    user.setId(rs.getInt(COL_USERS_ID));
                     userList.add(user);
                 }
             }
@@ -958,7 +967,7 @@ public class MysqlActivityDAO implements ActivityDAO {
     }
 
     @Override
-    public void deleteByCreator(int activityId, int creatorId) throws DBException {
+    public synchronized void deleteByCreator(int activityId, int creatorId) throws DBException {
         try (Connection con = factory.getConnection();
              PreparedStatement prst = con.prepareStatement(DELETE_ACTIVITY_BY_USER)) {
             int c = 0;
@@ -1058,33 +1067,19 @@ public class MysqlActivityDAO implements ActivityDAO {
         public Activity mapRow(ResultSet rs) {
             try {
                 Activity activity = new Activity();
-                activity.setId(rs.getInt(COL_ID));
-                activity.setName(rs.getString(COL_NAME));
-                activity.setDescription(rs.getString(COL_DESCRIPTION));
-                activity.setImage(rs.getString(COL_IMAGE));
-                activity.setPeopleCount(rs.getInt(COL_PEOPLE_COUNT));
-                activity.setCreatorId(rs.getInt(COL_CREATOR_ID));
-                activity.setByAdmin(rs.getBoolean(COL_BY_ADMIN));
-                activity.setCreateTime(new Date(rs.getTimestamp(COL_CREATE_TIME).getTime()));
+                activity.setId(rs.getInt(COL_ACTIVITIES_ID));
+                activity.setName(rs.getString(COL_ACTIVITIES_NAME));
+                activity.setDescription(rs.getString(COL_ACTIVITIES_DESCRIPTION));
+                activity.setImage(rs.getString(COL_ACTIVITIES_IMAGE));
+                activity.setPeopleCount(rs.getInt(COL_ACTIVITIES_PEOPLE_COUNT));
+                activity.setCreatorId(rs.getInt(COL_ACTIVITIES_CREATOR_ID));
+                activity.setCreateTime(new Date(rs.getTimestamp(COL_ACTIVITIES_CREATE_TIME).getTime()));
+                activity.setStatus(Activity.Status.get(rs.getString(COL_ACTIVITIES_STATUS)));
                 return activity;
             } catch (SQLException e) {
                 throw new IllegalStateException(e);
             }
         }
-    }
-
-    /**
-     * Setting status of user in activity
-     * @param user user information in activity
-     * @param status received status
-     */
-    private void setUserActivityStatus(UserActivity user, String status) {
-        if (status.equals(UserActivity.Status.STARTED.toString()))
-            user.setStatus(UserActivity.Status.STARTED);
-        else if (status.equals(UserActivity.Status.STOPPED.toString()))
-            user.setStatus(UserActivity.Status.STOPPED);
-        else if (status.equals(UserActivity.Status.NOT_STARTED.toString()))
-            user.setStatus(UserActivity.Status.NOT_STARTED);
     }
 
     /**
@@ -1095,9 +1090,10 @@ public class MysqlActivityDAO implements ActivityDAO {
         public UserActivity mapRow(ResultSet rs) {
             try {
                 UserActivity userActivity = new UserActivity();
-                userActivity.setActivityId(rs.getInt(COL_ACTIVITY_ID));
-                userActivity.setActivityName(rs.getString(COL_NAME));
-                userActivity.setSpentTime(rs.getLong(COL_SPENT_TIME));
+                userActivity.setActivityId(rs.getInt(COL_ACTIVITIES_ID));
+                userActivity.setActivityName(rs.getString(COL_ACTIVITIES_NAME));
+                userActivity.setSpentTime(rs.getLong(COL_USE_ACT_SPENT_TIME));
+                userActivity.setStatus(UserActivity.Status.get(rs.getString(COL_USE_ACT_STATUS)));
                 return userActivity;
             } catch (SQLException e) {
                 throw new IllegalStateException(e);

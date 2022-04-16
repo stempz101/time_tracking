@@ -279,7 +279,7 @@
                                    class="btn btn-sm btn-outline-secondary"><fmt:message key="open" bundle="${myBundle}" /></a>
                                 <c:if test="${activity.creatorId == sessionScope.authUser.id}">
                                     <c:choose>
-                                        <c:when test="${activity.forDelete}">
+                                        <c:when test="${activity.status.value.equals('DEL_WAITING')}">
                                             <a href="<%=request.getContextPath() + "/u/delete-act"%>?id=${activity.id}"
                                                class="btn btn-sm btn-outline-secondary disabled"><fmt:message key="remove" bundle="${myBundle}" /></a>
                                         </c:when>
